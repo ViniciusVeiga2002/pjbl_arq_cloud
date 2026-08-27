@@ -1,0 +1,93 @@
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.app-header h1 {
+  margin-bottom: 4px;
+  font-size: 1.6rem;
+}
+
+.app-header p {
+  margin-top: 0;
+  color: #52606d;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #d9e2ec;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #52606d;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-ativa {
+  color: #1f2933;
+  font-weight: 600;
+  border-bottom-color: #2563eb;
+}
+
+.subtitulo {
+  color: #52606d;
+  margin-top: -4px;
+  margin-bottom: 16px;
+}
+
+.tabela-container {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+th, td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e8ebee;
+  white-space: nowrap;
+}
+
+th {
+  background: #f4f6f8;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.8rem;
+  background: #64748b;
+}
+
+.status-em-rota { background: #2563eb; }
+.status-entregue { background: #2e8b57; }
+.status-atrasado { background: #d64545; }
+
+.erro {
+  color: #d64545;
+}
+
+.app-footer {
+  margin-top: 32px;
+  color: #9aa5b1;
+  font-size: 0.85rem;
+  text-align: center;
+}

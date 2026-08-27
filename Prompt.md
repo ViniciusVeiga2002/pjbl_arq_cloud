@@ -1,0 +1,38 @@
+# Prompt.md
+
+Registro do prompt utilizado com IA Generativa (IAG) para gerar a base deste frontend, conforme exigido pela atividade formativa.
+
+## Ferramenta utilizada
+
+Claude (Anthropic).
+
+## Prompt utilizado
+
+```
+Com base na documentação de personas e requisitos funcionais (RF01-RF14) do
+meu projeto PJBL — uma plataforma de telemetria veicular via OBD2 + app
+mobile + dashboard de gestão de entregas para transportadoras — e no material
+de aula sobre Microfrontend, Module Federation e Azure Static Web Apps,
+gere um frontend em React (Vite) com duas telas para a persona
+"Coordenador de Frota":
+
+1. Mapa da frota (RF06/RF08/RF09): lista/mapa com posição atual de cada
+   veículo, velocidade e um indicador visual de alerta quando o veículo
+   estiver com excesso de velocidade.
+2. Pedidos por entrega (RF05/RF07): lista de pedidos vinculados a cada
+   entrega em andamento, com status (em rota, entregue, atrasado) e
+   previsão de entrega.
+
+Requisitos técnicos:
+- A tela de pedidos deve consumir a lista via GET em uma Azure Function
+  (endpoint /api/pedidos), com fallback para um mock local caso a Function
+  não esteja disponível.
+- Organize o código em src/pages (telas), src/services/api.js (acesso a
+  dados) e um App.jsx com navegação simples por abas entre as duas telas.
+- Também gere a Azure Function (Node.js, modelo de programação v4) que
+  implementa GET /api/pedidos, retornando os mesmos dados mock em JSON, com
+  CORS liberado.
+- Comente o código explicando as decisões, pois o objetivo é uso didático
+  (disciplina de arquitetura de soluções em nuvem).
+```
+

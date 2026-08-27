@@ -1,0 +1,17 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Azure Functions (Node.js, modelo de programação v4) - endpoints mock para a atividade formativa de Microfrontend.",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"(sem testes automatizados nesta atividade)\" && exit 0"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.1"
+  },
+  "devDependencies": {
+    "azure-functions-core-tools": "^4"
+  }
+}
