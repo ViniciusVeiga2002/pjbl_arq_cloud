@@ -12,7 +12,7 @@ IAG utilizado.
 - **Site publicado (Azure Static Web Apps):** `https://SEU-SITE.azurestaticapps.net`
 - **Repositório GitHub:** `https://github.com/SEU-USUARIO/SEU-REPO`
 - **Azure Function (endpoint usado pelo frontend):** `https://SEU-SITE.azurestaticapps.net/api/pedidos`
-- **Mock no Apidog (se utilizado para outras funcionalidades):** `https://mock.apidog.com/m1/SEU-PROJETO/...`
+- **Mock no Apidog (mapa da frota e conclusão de entrega):** `https://mock.apidog.com/m1/1368691-1373285-default`
 
 ## Estrutura do repositório
 
