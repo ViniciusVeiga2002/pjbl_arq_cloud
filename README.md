@@ -52,6 +52,20 @@ npm run dev       # abre em http://localhost:5173
 Se a Function não estiver rodando, o frontend continua funcionando com dados
 mock locais (ver `src/services/api.js`).
 
+### 3. Mock Server do Apidog (opcional)
+
+A tela "Mapa da frota" (`GET /veiculos`) e a ação "Concluir entrega"
+(`POST /entregas/{id}/concluir`) consomem o Mock Server do Apidog, não a
+Azure Function. Para ligar isso:
+
+1. Crie um projeto gratuito em [apidog.com](https://apidog.com/pt-BR/) com os
+   dois endpoints acima e ative o **Mock Server** do projeto.
+2. Copie a URL base gerada (ex.: `https://mock.apidog.com/m1/SEU-PROJETO-ID`)
+   para `VITE_APIDOG_BASE_URL` em `frontend/.env.local`.
+3. Sem essa variável configurada, essas duas funcionalidades caem
+   automaticamente no mock local (mesmo padrão de fallback usado para a
+   Azure Function).
+
 ## Deploy
 
 1. Suba este repositório para o GitHub.

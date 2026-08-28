@@ -35,6 +35,11 @@ jobs:
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
+        env:
+          # Vite embute VITE_* no build, então precisa vir daqui (não do
+          # portal do Azure). Configure em Settings → Secrets and variables
+          # → Actions → Variables, com o nome VITE_APIDOG_BASE_URL.
+          VITE_APIDOG_BASE_URL: ${{ vars.VITE_APIDOG_BASE_URL }}
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_KIND_WATER_063145A0F }}
           action: "upload"

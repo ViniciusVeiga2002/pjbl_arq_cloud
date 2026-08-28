@@ -13,6 +13,12 @@
 // é configurado como "Application setting" no Azure Static Web Apps.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
+// Mock Server do Apidog (ver GUIA_PASSO_A_PASSO.md, seção 8) — usado para
+// endpoints que a atividade não exige como Azure Function (GET de veículos
+// e a ação de concluir entrega). Se a variável não estiver configurada em
+// .env.local, essas funções caem direto no mock local abaixo.
+const APIDOG_BASE_URL = import.meta.env.VITE_APIDOG_BASE_URL || '';
+
 /**
  * RF07 - Lista de pedidos por entrega.
  * GET /api/pedidos
@@ -35,15 +41,48 @@ export async function getPedidos() {
 
 /**
  * RF06 - Mapa em tempo real da frota.
- * Nesta entrega os dados de posição também são mockados (poderiam vir de
- * outro endpoint GET da mesma Function App, ex.: /api/veiculos).
- * Deixamos como função async para já simular a mesma "forma" de uma
- * chamada real e facilitar a troca por fetch(`${API_BASE_URL}/veiculos`)
- * no futuro.
+ * Busca a posição dos veículos no Mock Server do Apidog. Se a URL não
+ * estiver configurada (VITE_APIDOG_BASE_URL) ou a chamada falhar, cai para
+ * o mock local — mesma estratégia usada em getPedidos() para a Function.
  */
 export async function getVeiculos() {
-  await new Promise((resolve) => setTimeout(resolve, 250)); // simula latência de rede
-  return getVeiculosMockLocal();
+  if (!APIDOG_BASE_URL) return getVeiculosMockLocal();
+
+  try {
+    const res = await fetch(`${APIDOG_BASE_URL}/veiculos`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[api] Falha ao buscar /veiculos no Apidog, usando mock local.', err);
+    return getVeiculosMockLocal();
+  }
+}
+
+/**
+ * RF10 - Marca uma entrega como concluída.
+ * POST no Mock Server do Apidog. Se a URL não estiver configurada ou a
+ * chamada falhar, simula sucesso localmente (sem persistir nada) para a
+ * demonstração não travar.
+ */
+export async function concluirEntrega(entregaId) {
+  if (!APIDOG_BASE_URL) return concluirEntregaMockLocal(entregaId);
+
+  try {
+    const res = await fetch(`${APIDOG_BASE_URL}/entregas/${entregaId}/concluir`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ concluidoEm: new Date().toISOString() }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[api] Falha ao concluir entrega no Apidog, simulando localmente.', err);
+    return concluirEntregaMockLocal(entregaId);
+  }
+}
+
+function concluirEntregaMockLocal(entregaId) {
+  return { sucesso: true, entregaId, status: 'Entregue', concluidoEm: new Date().toISOString() };
 }
 
 function getPedidosMockLocal() {

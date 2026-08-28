@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getPedidos } from '../services/api';
+import { getPedidos, concluirEntrega } from '../services/api';
 
 // Tela 2 — Pedidos por entrega (persona: Coordenador de Frota, RF07)
 //
@@ -26,6 +26,19 @@ export default function PedidosEntrega() {
   const [pedidos, setPedidos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const [concluindo, setConcluindo] = useState(null);
+
+  async function handleConcluirEntrega(entregaId) {
+    setConcluindo(entregaId);
+    try {
+      await concluirEntrega(entregaId);
+      setPedidos((atual) =>
+        atual.map((p) => (p.entregaId === entregaId ? { ...p, status: 'Entregue' } : p))
+      );
+    } finally {
+      setConcluindo(null);
+    }
+  }
 
   useEffect(() => {
     let ativo = true;
@@ -61,6 +74,7 @@ export default function PedidosEntrega() {
                 <th>Veículo</th>
                 <th>Previsão</th>
                 <th>Status</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -73,6 +87,17 @@ export default function PedidosEntrega() {
                   <td>{formatarData(p.previsaoEntrega)}</td>
                   <td>
                     <span className={`badge ${statusClasse[p.status] || ''}`}>{p.status}</span>
+                  </td>
+                  <td>
+                    {p.status !== 'Entregue' && (
+                      <button
+                        type="button"
+                        disabled={concluindo === p.entregaId}
+                        onClick={() => handleConcluirEntrega(p.entregaId)}
+                      >
+                        {concluindo === p.entregaId ? 'Concluindo…' : 'Concluir entrega'}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
