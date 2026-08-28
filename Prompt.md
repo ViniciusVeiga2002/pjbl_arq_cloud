@@ -36,3 +36,27 @@ Requisitos técnicos:
   (disciplina de arquitetura de soluções em nuvem).
 ```
 
+## Ajuste — 2026-08-28 (Vinicius Veiga)
+
+Prompt utilizado para pedir ajustes à IAG (Claude Code), em duas partes:
+
+```
+1. Os dados sempre serão os mesmos no front? Preciso que a API gere dados
+   aleatórios, pra isso servia o mock.
+
+2. Tenho que ter o mock com Apidog mesmo, como faço para adaptar ao nosso
+   projeto?
+```
+
+O que foi alterado a partir disso:
+- `api/src/functions/getPedidos.js` passou a gerar de 4 a 8 pedidos
+  aleatórios a cada chamada (cliente, status e previsão de entrega
+  variam), em vez de retornar sempre o mesmo array fixo.
+- Novos endpoints simulados no Mock Server do Apidog:
+  `GET /veiculos` (mapa da frota) e `POST /entregas/{id}/concluir`
+  (marcar entrega como concluída, RF10).
+- `frontend/src/services/api.js` passou a consumir esses dois endpoints
+  do Apidog (`VITE_APIDOG_BASE_URL`), com fallback para o mock local
+  quando a URL não está configurada ou a chamada falha.
+- Botão "Concluir entrega" adicionado à tela "Pedidos por entrega".
+
