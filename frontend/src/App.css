@@ -91,3 +91,110 @@ th {
   font-size: 0.85rem;
   text-align: center;
 }
+
+/* --- CRUD de pedidos (MongoDB Atlas) --- */
+
+.barra-busca {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.barra-busca input[type='text'] {
+  flex: 1;
+  max-width: 320px;
+}
+
+.form-pedido {
+  background: #fff;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.form-pedido h3 {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #52606d;
+}
+
+input, select, button {
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+input[type='text'],
+input[type='datetime-local'],
+select {
+  padding: 8px 10px;
+  border: 1px solid #cbd2d9;
+  border-radius: 6px;
+  background: #fff;
+}
+
+button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn-secundario {
+  background: #e4e9ef;
+  color: #1f2933;
+}
+
+.btn-perigo {
+  background: #d64545;
+}
+
+.acoes-linha {
+  display: flex;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.linha-edicao td {
+  background: #f8fafc;
+}
+
+.form-edicao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.acoes-edicao {
+  display: flex;
+  gap: 6px;
+}
+
+.tabela-vazia {
+  text-align: center;
+  color: #9aa5b1;
+  padding: 24px !important;
+}

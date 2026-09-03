@@ -60,3 +60,39 @@ O que foi alterado a partir disso:
   quando a URL não está configurada ou a chamada falha.
 - Botão "Concluir entrega" adicionado à tela "Pedidos por entrega".
 
+
+## Ajuste — 2026-09-03 (Vinicius Veiga)
+
+Prompt utilizado para pedir a extensão de CRUD com MongoDB (Claude, via Cowork):
+
+```
+Criar uma conta de estudante para o banco de dados MongoDB (MongoDB Student
+Pack). Criar um banco de dados no MongoDB Atlas. Criar 4 Azure Functions
+para a aplicação PJBL: inserir, alterar, excluir e pesquisar. O frontend
+criado anteriormente deve executar as 4 Azure Functions. Entregar evidência
+da criação do banco de dados MongoDB, evidência da criação das 4 Azure
+Functions e evidência do frontend executando as 4 Azure Functions. Informar
+no documento o nome dos alunos que realizaram a atividade.
+```
+
+O que foi alterado a partir disso:
+- `api/src/functions/getPedidos.js` foi renomeado para `searchPedidos.js` e
+  passou a consultar o MongoDB Atlas (coleção `pedidos`) em vez de gerar
+  dados aleatórios em memória. Aceita filtros por `cliente`, `status`,
+  `entregaId` e `id` via query string (função "pesquisar").
+- Três novas Azure Functions: `createPedido.js` (POST, "inserir"),
+  `updatePedido.js` (PUT `/pedidos/{id}`, "alterar") e `deletePedido.js`
+  (DELETE `/pedidos/{id}`, "excluir") — as 4 juntas formam o CRUD exigido.
+- `api/src/lib/mongoClient.js` — conexão única e cacheada com o MongoDB
+  Atlas, reaproveitada entre as 4 functions.
+- `api/package.json` ganhou a dependência `mongodb` (driver oficial).
+- `frontend/src/services/api.js` ganhou `criarPedido`, `atualizarPedido` e
+  `excluirPedido`, cada uma com fallback local (não quebra a demo se a
+  Function/MongoDB estiver fora do ar).
+- `frontend/src/pages/PedidosEntrega.jsx` virou uma tela de CRUD completa:
+  barra de pesquisa por cliente, formulário de cadastro, edição inline por
+  linha e botão de exclusão — exercitando as 4 Functions a partir da UI.
+- Guia dedicado em `GUIA_MONGODB_CRUD.md` (conta no MongoDB Atlas, cluster,
+  connection string, variáveis de ambiente local e em produção, testes de
+  cada endpoint, e checklist de evidências).
+- Documento de evidências: `EVIDENCIAS_MONGODB.md`.

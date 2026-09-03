@@ -20,22 +20,87 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 const APIDOG_BASE_URL = import.meta.env.VITE_APIDOG_BASE_URL || '';
 
 /**
- * RF07 - Lista de pedidos por entrega.
- * GET /api/pedidos
+ * RF05/RF07 - Pesquisar pedidos (lista completa ou filtrada).
+ * GET /api/pedidos[?cliente=&status=&entregaId=&id=]
  *
- * Busca a lista de pedidos vinculados às entregas em andamento na Azure
- * Function. Se a chamada falhar (ex.: function ainda não publicada, ou
- * rodando sem "npm run dev" na pasta api/), cai para um mock local — assim
- * a tela nunca fica quebrada durante o desenvolvimento/demonstração.
+ * Uma das 4 Azure Functions de CRUD ligadas ao MongoDB Atlas (ver
+ * GUIA_MONGODB_CRUD.md). Se a chamada falhar (Function fora do ar, ou
+ * MONGODB_URI ainda não configurada), cai para um mock local — assim a
+ * tela nunca fica quebrada durante o desenvolvimento/demonstração.
  */
-export async function getPedidos() {
+export async function getPedidos(filtros = {}) {
   try {
-    const res = await fetch(`${API_BASE_URL}/pedidos`);
+    const params = new URLSearchParams(
+      Object.fromEntries(Object.entries(filtros).filter(([, v]) => v))
+    );
+    const url = `${API_BASE_URL}/pedidos${params.toString() ? `?${params}` : ''}`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (err) {
-    console.warn('[api] Falha ao buscar /pedidos na Azure Function, usando mock local.', err);
-    return getPedidosMockLocal();
+    console.warn('[api] Falha ao pesquisar pedidos na Azure Function, usando mock local.', err);
+    return filtrarPedidosFallback(filtros);
+  }
+}
+
+/**
+ * RF05/RF07 - Inserir pedido.
+ * POST /api/pedidos
+ */
+export async function criarPedido(pedido) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/pedidos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pedido),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[api] Falha ao inserir pedido na Azure Function, salvando só localmente.', err);
+    const novo = {
+      id: `PED-LOCAL-${Date.now().toString().slice(-4)}`,
+      status: 'Aguardando coleta',
+      ...pedido,
+    };
+    pedidosFallback = [novo, ...pedidosFallback];
+    return novo;
+  }
+}
+
+/**
+ * RF05/RF07 - Alterar pedido.
+ * PUT /api/pedidos/{id}
+ */
+export async function atualizarPedido(id, dados) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/pedidos/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[api] Falha ao alterar pedido na Azure Function, alterando só localmente.', err);
+    pedidosFallback = pedidosFallback.map((p) => (p.id === id ? { ...p, ...dados } : p));
+    return pedidosFallback.find((p) => p.id === id);
+  }
+}
+
+/**
+ * RF05/RF07 - Excluir pedido.
+ * DELETE /api/pedidos/{id}
+ */
+export async function excluirPedido(id) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/pedidos/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[api] Falha ao excluir pedido na Azure Function, removendo só localmente.', err);
+    pedidosFallback = pedidosFallback.filter((p) => p.id !== id);
+    return { sucesso: true, id };
   }
 }
 
@@ -83,6 +148,22 @@ export async function concluirEntrega(entregaId) {
 
 function concluirEntregaMockLocal(entregaId) {
   return { sucesso: true, entregaId, status: 'Entregue', concluidoEm: new Date().toISOString() };
+}
+
+// Estado local usado só como fallback quando a Azure Function/MongoDB não
+// está acessível — nunca é a fonte de dados real. Existe para as telas
+// não travarem durante o desenvolvimento antes do MONGODB_URI estar
+// configurado, ou numa demonstração sem internet.
+let pedidosFallback = getPedidosMockLocal();
+
+function filtrarPedidosFallback(filtros) {
+  return pedidosFallback.filter((p) => {
+    if (filtros.id && p.id !== filtros.id) return false;
+    if (filtros.entregaId && p.entregaId !== filtros.entregaId) return false;
+    if (filtros.status && p.status !== filtros.status) return false;
+    if (filtros.cliente && !p.cliente.toLowerCase().includes(filtros.cliente.toLowerCase())) return false;
+    return true;
+  });
 }
 
 function getPedidosMockLocal() {
