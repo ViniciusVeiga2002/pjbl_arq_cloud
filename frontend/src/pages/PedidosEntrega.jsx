@@ -160,10 +160,6 @@ export default function PedidosEntrega() {
   return (
     <section>
       <h2>Pedidos por entrega</h2>
-      <p className="subtitulo">
-        CRUD completo de pedidos via Azure Functions + MongoDB Atlas (RF05 / RF07): <code>GET</code>,{' '}
-        <code>POST</code>, <code>PUT</code> e <code>DELETE</code> em <code>/api/pedidos</code>.
-      </p>
 
       <form className="barra-busca" onSubmit={handleBuscar}>
         <input
