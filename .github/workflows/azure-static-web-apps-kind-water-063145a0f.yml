@@ -1,5 +1,11 @@
-name: Azure Static Web Apps CI/CD
+name: Deploy do frontend (Azure Static Web Apps)
 
+# Publica o shell e os dois microfrontends remotos. Cada um é compilado de
+# forma independente (frontend/<app>/dist) e o script montar-dist.js junta
+# os três em frontend/dist: shell na raiz, remotos em /mfe-pedidos e
+# /mfe-frota. O backend NÃO é mais publicado aqui (antes, api_location
+# apontava para as Functions): agora ele é formado por Function Apps
+# próprios, publicados pelo workflow backend-azure-functions.yml.
 on:
   push:
     branches:
@@ -10,7 +16,12 @@ on:
       - main
 
 jobs:
+  testes:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    uses: ./.github/workflows/testes.yml
+
   build_and_deploy_job:
+    needs: testes
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
@@ -18,10 +29,21 @@ jobs:
        id-token: write
        contents: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build dos microfrontends (shell + mfe-pedidos + mfe-frota)
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
       - name: Get Id Token
@@ -35,21 +57,13 @@ jobs:
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
-        env:
-          # Vite embute VITE_* no build, então precisa vir daqui (não do
-          # portal do Azure). Configure em Settings → Secrets and variables
-          # → Actions → Variables, com o nome VITE_APIDOG_BASE_URL.
-          VITE_APIDOG_BASE_URL: ${{ vars.VITE_APIDOG_BASE_URL }}
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_KIND_WATER_063145A0F }}
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "./frontend" # App source code path
-          api_location: "./api" # Api source code path - optional
-          output_location: "dist" # Built app content directory - optional
+          app_location: "frontend/dist"
+          output_location: ""
+          skip_app_build: true
           github_id_token: ${{ steps.idtoken.outputs.result }}
-          ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

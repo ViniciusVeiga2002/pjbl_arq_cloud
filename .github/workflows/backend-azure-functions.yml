@@ -1,0 +1,54 @@
+name: Deploy do backend (Azure Functions)
+
+# Cada projeto de backend é um Function App separado e é publicado de forma
+# independente (microsserviços). O job de testes precisa passar antes.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "testes-arquitetura/**"
+      - ".github/workflows/backend-azure-functions.yml"
+  workflow_dispatch:
+
+jobs:
+  testes:
+    uses: ./.github/workflows/testes.yml
+
+  deploy:
+    needs: testes
+    runs-on: ubuntu-latest
+    name: Deploy ${{ matrix.projeto }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - projeto: gateway
+            function_app: pjbl-arq-cloud-gateway
+            perfil: AZURE_FUNCTIONAPP_PUBLISH_PROFILE_GATEWAY
+          - projeto: bff-web
+            function_app: pjbl-arq-cloud-bff-web
+            perfil: AZURE_FUNCTIONAPP_PUBLISH_PROFILE_BFF_WEB
+          - projeto: servico-pedidos
+            function_app: pjbl-arq-cloud-pedidos
+            perfil: AZURE_FUNCTIONAPP_PUBLISH_PROFILE_PEDIDOS
+          - projeto: servico-frota
+            function_app: pjbl-arq-cloud-frota
+            perfil: AZURE_FUNCTIONAPP_PUBLISH_PROFILE_FROTA
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependências de produção
+        run: npm ci --omit=dev --prefix backend/${{ matrix.projeto }}
+
+      - name: Publicar no Function App ${{ matrix.function_app }}
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ matrix.function_app }}
+          package: backend/${{ matrix.projeto }}
+          publish-profile: ${{ secrets[matrix.perfil] }}

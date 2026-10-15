@@ -1,0 +1,9 @@
+{
+  "name": "testes-arquitetura",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Testes unitários de arquitetura (estilo ArchUnit, com node:test): verificam no código real as regras de Clean Architecture, Vertical Slice, Microsserviços, Database per Service, BFF, API Gateway, EDA, Serverless e Microfrontends.",
+  "scripts": {
+    "test": "node --test \"*.test.js\""
+  }
+}

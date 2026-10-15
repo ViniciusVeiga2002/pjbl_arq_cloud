@@ -1,0 +1,40 @@
+name: Testes (unidade + arquitetura)
+
+# Roda em push de qualquer branch de trabalho e em PR. Na main, é chamado
+# pelos workflows de deploy (workflow_call): nada é publicado se uma regra
+# de arquitetura ou um teste de unidade falhar.
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+  workflow_call:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    name: Testes de unidade, de arquitetura e build do frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependências do backend
+        run: |
+          for projeto in gateway bff-web servico-pedidos servico-frota; do
+            npm ci --prefix backend/$projeto
+          done
+
+      - name: Testes de unidade (4 Function Apps)
+        run: npm run test:unidade
+
+      - name: Testes de arquitetura
+        run: npm run test:arquitetura
+
+      - name: Build dos microfrontends
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build

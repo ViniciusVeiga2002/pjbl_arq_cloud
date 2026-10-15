@@ -1,0 +1,11 @@
+{
+  "name": "pjbl-arq-cloud",
+  "private": true,
+  "description": "Plataforma de telemetria e gestão de entregas — Microfrontends + API Gateway + BFF + Microsserviços serverless (Azure Functions) + EDA.",
+  "scripts": {
+    "test": "npm run test:unidade && npm run test:arquitetura",
+    "test:unidade": "npm test --prefix backend/gateway && npm test --prefix backend/bff-web && npm test --prefix backend/servico-pedidos && npm test --prefix backend/servico-frota",
+    "test:arquitetura": "npm test --prefix testes-arquitetura",
+    "instalar": "npm install --prefix backend/gateway && npm install --prefix backend/bff-web && npm install --prefix backend/servico-pedidos && npm install --prefix backend/servico-frota && npm install --prefix frontend"
+  }
+}
