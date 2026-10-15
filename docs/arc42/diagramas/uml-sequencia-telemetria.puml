@@ -1,0 +1,50 @@
+@startuml uml-sequencia-telemetria
+' C4 Model - Nível 4: Sequência (UML). Telemetria do veículo entra por
+' fila (EDA) e chega ao painel da frota pelo Gateway e pelo BFF.
+skinparam dpi 180
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam defaultFontSize 14
+skinparam ParticipantPadding 4
+skinparam BoxPadding 4
+skinparam maxMessageSize 170
+hide footbox
+autonumber
+
+title Sequência — Telemetria OBD2/GPS até o painel da frota
+
+participant "Dispositivo OBD2/GPS\n(simulador)" as OBD
+queue "telemetria-veiculos" as Q
+box "Serviço de Frota" #EEF8F1
+participant "registrarTelemetria\nFunction" as Fn
+participant "Veiculo\n(domínio)" as V
+database "pjbl_frota" as DB
+participant "listarVeiculos /\nlistarEntregas" as Leit
+end box
+participant "BFF Web\nObterPainelFrota" as BFF
+participant "API Gateway" as GW
+participant "mfe-frota" as MFE
+
+OBD -> Q : LeituraDeTelemetriaRecebida\n{placa, lat, lng, velocidade}
+Q -> Fn : Queue Trigger
+activate Fn
+Fn -> V : registrarLeitura(leitura)
+V --> Fn : veiculo (status = alerta-velocidade se > 80 km/h)
+Fn -> DB : upsert por placa
+deactivate Fn
+note over Q, Fn : mensagem inválida → descartada com log;\nfalha de infraestrutura → até 5 tentativas → fila -poison
+
+loop a cada 15 s
+  MFE -> GW : GET /api/web/painel-frota
+  GW -> BFF : GET /api/painel-frota
+  par
+    BFF -> Leit : GET /api/veiculos
+  else
+    BFF -> Leit : GET /api/entregas
+  end
+  Leit -> DB : consulta
+  BFF -> BFF : calcula indicadores
+  BFF --> GW : {indicadores, veiculos, entregas}
+  GW --> MFE : 200
+end
+@enduml

@@ -1,0 +1,49 @@
+@startuml uml-componentes-frontend
+' C4 Model - Nível 4: Diagrama de Componentes (UML) do frontend em
+' microfrontends (Module Federation).
+skinparam dpi 180
+skinparam componentStyle uml2
+skinparam shadowing false
+
+title Componentes do frontend em Microfrontends (C4 Nível 4)
+
+package "shell (host)" {
+  [main.jsx / bootstrap.jsx] as boot
+  [App.jsx] as app
+  [microfrontends.js\n(registro dos remotos)] as reg
+  [LimiteDeFalhaDoMicrofrontend] as limite
+}
+
+package "mfe-pedidos (remoto)" {
+  () "remoteEntry.js\n./TelaPedidos" as exPedidos
+  [TelaPedidos.jsx] as telaPedidos
+  [services/apiPedidos.js] as apiPedidos
+}
+
+package "mfe-frota (remoto)" {
+  () "remoteEntry.js\n./TelaFrota" as exFrota
+  [TelaFrota.jsx] as telaFrota
+  [services/apiFrota.js] as apiFrota
+}
+
+() "Evento de navegador\npjbl:entrega-concluida" as evento
+() "API Gateway\n/api/web/*" as gateway
+() "React (singleton\ncompartilhado)" as react
+
+boot --> app
+app --> reg
+app --> limite
+reg ..> exPedidos : import('mfePedidos/TelaPedidos')\nem tempo de execução
+reg ..> exFrota : import('mfeFrota/TelaFrota')\nem tempo de execução
+exPedidos - telaPedidos
+exFrota - telaFrota
+telaPedidos --> apiPedidos
+telaFrota --> apiFrota
+apiPedidos ..> gateway : HTTPS
+apiFrota ..> gateway : HTTPS
+telaPedidos ..> evento : dispara
+app ..> evento : escuta
+boot ..> react : provê
+telaPedidos ..> react : usa
+telaFrota ..> react : usa
+@enduml

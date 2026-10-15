@@ -1,0 +1,56 @@
+@startuml uml-sequencia-concluir-entrega
+' C4 Model - Nível 4: Sequência (UML). Concluir entrega: o BFF orquestra
+' várias alterações; os eventos são consumidos em paralelo e a projeção usa
+' concorrência otimista com retentativa.
+skinparam dpi 180
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam defaultFontSize 14
+skinparam ParticipantPadding 4
+skinparam BoxPadding 4
+skinparam maxMessageSize 170
+hide footbox
+autonumber
+
+title Sequência — Concluir entrega (BFF + eventos em paralelo + concorrência otimista)
+
+participant "mfe-pedidos" as MFE
+participant "Shell" as SH
+participant "API Gateway" as GW
+participant "BFF Web\nConcluirEntrega" as BFF
+participant "Serviço de\nPedidos" as SP
+queue "pedidos-eventos" as Q
+participant "Serviço de Frota\natualizarProjecao" as SF
+database "pjbl_frota" as DBF
+
+MFE -> GW : POST /api/web/entregas/ENT-501/concluir
+GW -> BFF : POST /api/entregas/ENT-501/concluir
+activate BFF
+BFF -> SP : GET /api/pedidos?entregaId=ENT-501
+SP --> BFF : [PED-1 Em rota, PED-2 Atrasado]
+par para cada pedido pendente
+  BFF -> SP : PUT /api/pedidos/PED-1 {status: Entregue}
+  SP -> Q : PedidoAlterado(PED-1)
+else
+  BFF -> SP : PUT /api/pedidos/PED-2 {status: Entregue}
+  SP -> Q : PedidoAlterado(PED-2)
+end
+BFF --> GW : 200 {pedidosConcluidos}
+deactivate BFF
+GW --> MFE : 200
+MFE -> SH : CustomEvent pjbl:entrega-concluida
+SH -> SH : exibe aviso
+
+par lote do Queue Trigger
+  Q -> SF : PedidoAlterado(PED-1)
+  SF -> DBF : lê ENT-501 (versão 3)
+  SF -> DBF : grava se versão = 3 → ok (versão 4)
+else
+  Q -> SF : PedidoAlterado(PED-2)
+  SF -> DBF : lê ENT-501 (versão 3)
+  SF -> DBF : grava se versão = 3 → conflito
+  note right of SF : ErroDeConcorrencia:\nrelê e reaplica (idempotente)
+  SF -> DBF : lê ENT-501 (versão 4)
+  SF -> DBF : grava se versão = 4 → ok\nsituação "Concluída"
+end
+@enduml

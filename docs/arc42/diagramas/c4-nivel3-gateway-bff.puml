@@ -1,0 +1,37 @@
+@startuml c4-nivel3-gateway-bff
+' C4 Model - Nível 3 (Componentes) dos contêineres de borda:
+' API Gateway e Backend for Frontend (BFF Web).
+!include <C4/C4_Component>
+skinparam dpi 180
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Componentes (C4 Nível 3) — API Gateway e BFF Web
+
+Container_Ext(mfes, "Microfrontends", "Navegador", "mfe-pedidos · mfe-frota")
+Container_Ext(pedidos, "Serviço de Pedidos", "Azure Functions")
+Container_Ext(frota, "Serviço de Frota", "Azure Functions")
+
+Container_Boundary(gw, "API Gateway (pjbl-arq-cloud-gateway)") {
+  Component(gwFn, "encaminharRequisicaoFunction", "HTTP /api/{*caminho}, anônima", "Preflight CORS, correlation-id")
+  Component(gwUc, "EncaminharRequisicaoCasoDeUso", "Aplicação", "404/405 → 429 → encaminha")
+  Component(gwDom, "TabelaDeRotas · LimitadorDeRequisicoes · PoliticaDeCors", "Domínio")
+  Component(gwHttp, "EncaminhadorHttp", "infraestrutura/clientes", "Prefixo web → BFF_WEB_URL + chave")
+}
+
+Container_Boundary(bffB, "BFF Web (pjbl-arq-cloud-bff-web)") {
+  Component(bffFatias, "Fatias do BFF", "6 × *Function.js + *CasoDeUso.js", "pesquisar · cadastrar · alterar · excluir pedido · concluir-entrega · painel-frota")
+  Component(bffPortas, "PortaServicoDePedidos · PortaServicoDeFrota", "aplicacao/portas")
+  Component(bffClientes, "ClienteServicoDePedidos · ClienteServicoDeFrota", "infraestrutura/clientes", "Chave da Function, correlation-id, timeout")
+}
+
+Rel(mfes, gwFn, "/api/web/*", "HTTPS")
+Rel(gwFn, gwUc, "executar()")
+Rel(gwUc, gwDom, "Resolve rota e limite")
+Rel(gwUc, gwHttp, "encaminhar()")
+Rel(gwHttp, bffFatias, "/api/*", "HTTPS + chave")
+Rel(bffFatias, bffPortas, "Usa")
+Rel(bffClientes, bffPortas, "Implementa")
+Rel(bffClientes, pedidos, "HTTPS + chave")
+Rel(bffClientes, frota, "HTTPS + chave")
+@enduml

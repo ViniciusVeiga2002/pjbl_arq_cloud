@@ -1,0 +1,60 @@
+@startuml deployment
+' Arc42 seção 7 - Visão de Implantação (Diagrama de Implantação UML).
+skinparam dpi 180
+skinparam shadowing false
+skinparam nodesep 40
+skinparam ranksep 50
+
+title Implantação — Azure (serverless) + MongoDB Atlas
+
+node "Estação do usuário\n<<device>>" as pc {
+  node "Navegador\n<<execution environment>>" as nav {
+    artifact "shell + mfe-pedidos + mfe-frota\n(carregados em tempo de execução)" as spaNav
+  }
+}
+
+cloud "Microsoft Azure" as azure {
+  node "Azure Static Web Apps (Free)\nkind-water-063145a0f" as swa {
+    artifact "frontend/dist\n/ (shell)\n/mfe-pedidos/\n/mfe-frota/" as dist
+  }
+  node "Function App pjbl-arq-cloud-gateway\n<<Plano de Consumo, Node.js 22>>" as fGw {
+    artifact "backend/gateway" as aGw
+  }
+  node "Function App pjbl-arq-cloud-bff-web\n<<Plano de Consumo, Node.js 22>>" as fBff {
+    artifact "backend/bff-web" as aBff
+  }
+  node "Function App pjbl-arq-cloud-pedidos\n<<Plano de Consumo, Node.js 22>>" as fPed {
+    artifact "backend/servico-pedidos" as aPed
+  }
+  node "Function App pjbl-arq-cloud-frota\n<<Plano de Consumo, Node.js 22>>" as fFro {
+    artifact "backend/servico-frota" as aFro
+  }
+  node "Storage Account pjblarqcloudeventos\n<<Queue Storage>>" as sto {
+    artifact "fila pedidos-eventos" as q1
+    artifact "fila telemetria-veiculos" as q2
+  }
+}
+
+cloud "MongoDB Atlas (M0)" as atlas {
+  database "pjbl_pedidos\n(usuário svc-pedidos)" as dbP
+  database "pjbl_frota\n(usuário svc-frota)" as dbF
+}
+
+
+nav --> swa : HTTPS (estáticos)
+nav --> fGw : HTTPS /api/web/*
+fGw --> fBff : HTTPS + chave
+fBff --> fPed : HTTPS + chave
+fBff --> fFro : HTTPS + chave
+fPed --> q1 : HTTPS
+q1 --> fFro : Queue Trigger
+q2 --> fFro : Queue Trigger
+fPed --> dbP : TLS 27017
+fFro --> dbF : TLS 27017
+note as ci
+  <b>CI/CD (GitHub Actions)</b>
+  testes de unidade + arquitetura → deploy
+  · frontend → Static Web Apps
+  · 4 Function Apps (um job por serviço)
+end note
+@enduml

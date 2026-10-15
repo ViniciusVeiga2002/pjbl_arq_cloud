@@ -4,3 +4,9 @@ dist/
 *.local
 local.settings.json
 .DS_Store
+
+# Guia local de criação dos recursos no Azure (não versionado)
+AZURE_RECURSOS.md
+
+# Arquivo de contexto de trabalho local (não faz parte da entrega)
+docs/arc42/CONTEXTO_ARC42.md

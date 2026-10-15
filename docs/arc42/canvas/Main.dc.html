@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+  <style>
+    body { margin: 0; font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    * { box-sizing: border-box; }
+    a { color: #2f6f8f; } a:hover { color: #245a74; }
+
+    .display { font-family: "Space Grotesk", "Trebuchet MS", system-ui, sans-serif; }
+
+    .panel {
+      background: #ffffff;
+      border: 1px solid #e6e0d6;
+      border-radius: 4px;
+      padding: 18px 20px 20px;
+    }
+    .label {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-family: "Space Grotesk", "Trebuchet MS", system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid #ece7dd;
+    }
+    .idx {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0;
+      color: #bcb3a5;
+    }
+    .panel p { margin: 0; font-size: 14px; line-height: 1.5; color: #2c2a26; }
+    .panel p + p { margin-top: 9px; }
+    .panel ul, .panel ol { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.5; color: #2c2a26; }
+    .panel li { margin: 3px 0; }
+    .sub { font-weight: 600; color: #1f1d1a; }
+    code {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.9em;
+      background: #f1ede4;
+      padding: 0 4px;
+      border-radius: 3px;
+      color: #4a4640;
+    }
+    .risk-list {
+      column-count: 3;
+      column-gap: 32px;
+      margin: 0;
+      padding-left: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #2c2a26;
+    }
+    .risk-list li { break-inside: avoid; margin: 0 0 7px; }
+  </style>
+</helmet>
+
+<div class="canvas-root" style="width: 2245px; min-height: 1587px; background: #faf8f4; padding: 56px 56px 64px; color: #211f1c;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 48px;">
+    <div>
+      <div class="display" style="font-weight: 600; font-size: 15px; letter-spacing: 3px; text-transform: uppercase; color: {{accent}};">Software Architecture Canvas</div>
+      <h1 class="display" style="font-weight: 700; font-size: 46px; line-height: 1.08; margin: 12px 0 0; max-width: 1350px;">Plataforma de Telemetria e Gestão de Entregas</h1>
+    </div>
+    <div style="flex-shrink: 0; text-align: right; font-size: 14px; line-height: 1.55; color: #6b655d; padding-top: 6px;">
+      Arquitetura de Soluções &middot; PUC<br>
+      Grupo: Fernando Padilha &middot; Hector Saldivar &middot; Theo Otto &middot; Vinicius Veiga<br>
+      Entrega parcial — documentação Arc42 &middot; set/2026
+    </div>
+  </div>
+
+  <div style="height: 3px; background: {{accent}}; margin: 22px 0 24px;"></div>
+
+  <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; align-items: stretch;">
+
+    <div class="panel" style="grid-column: span 4;">
+      <div class="label" style="color: {{accent}};"><span class="idx">01</span>Nome e propósito</div>
+      <p>Plataforma de Telemetria e Gestão de Entregas. Dá à transportadora visibilidade da frota e das entregas em tempo real e reduz falhas e atrasos na operação logística.</p>
+    </div>
+
+    <div class="panel" style="grid-column: span 4;">
+      <div class="label" style="color: {{accent}};"><span class="idx">02</span>Contexto de negócio</div>
+      <p>Transportadora com frota própria: motoristas em campo, coordenação no escritório e diretoria acompanhando indicadores. Hoje o mercado resolve isso com planilhas e rastreadores isolados, sem gestão de pedidos integrada.</p>
+    </div>
+
+    <div class="panel" style="grid-column: span 4;">
+      <div class="label" style="color: {{accent}};"><span class="idx">03</span>Stakeholders-chave</div>
+      <ul>
+        <li><span class="sub">Motorista</span> — entregas do dia, prova de entrega (POD)</li>
+        <li><span class="sub">Coordenador de Frota</span> — mapa, pedidos por entrega, alertas</li>
+        <li><span class="sub">Diretor de Logística</span> — KPIs consolidados (custo, falhas, prazos)</li>
+        <li><span class="sub">Equipe de desenvolvimento</span> — grupo PJBL (4 integrantes)</li>
+        <li><span class="sub">Professor / avaliador</span> — aderência a Arc42, C4 e UML</li>
+      </ul>
+    </div>
+
+    <div class="panel" style="grid-column: span 5;">
+      <div class="label" style="color: {{accent}};"><span class="idx">04</span>Requisitos-chave</div>
+      <p><span class="sub">Funcionais.</span> CRUD de pedidos por entrega (RF05 / RF07): <span class="sub">implementado</span>. Telemetria OBD2/GPS e modo offline (RF01–RF04); alertas de velocidade, falha mecânica e desvio de rota (RF08–RF10); POD (RF11); relatórios e KPIs (RF13); acesso por perfil (RF14): planejados.</p>
+      <p><span class="sub">Qualidade.</span> Disponibilidade com internet instável &middot; custo zero (free tier) &middot; manutenibilidade &middot; evolutibilidade.</p>
+    </div>
+
+    <div class="panel" style="grid-column: span 4;">
+      <div class="label" style="color: {{accent}};"><span class="idx">05</span>Restrições</div>
+      <p>Planos gratuitos (Azure Static Web Apps Free, Azure Functions no plano de Consumo, MongoDB Atlas M0). Backend 100% serverless em Azure Functions Node.js 22; frontend React/Vite com Module Federation. Sem autenticação de usuário nesta fase. Diagramas em PlantUML / C4.</p>
+    </div>
+
+    <div class="panel" style="grid-column: span 3;">
+      <div class="label" style="color: {{accent}};"><span class="idx">06</span>Blocos principais</div>
+      <p>Shell, mfe-pedidos e mfe-frota (Static Web Apps) &middot; API Gateway &middot; BFF Web &middot; Serviço de Pedidos &middot; Serviço de Frota &middot; filas <code>pedidos-eventos</code> e <code>telemetria-veiculos</code> &middot; bancos <code>pjbl_pedidos</code> e <code>pjbl_frota</code>.</p>
+      <p><span class="sub">Planejados:</span> App do Motorista e BFF Mobile.</p>
+    </div>
+
+    <div class="panel" style="grid-column: span 5;">
+      <div class="label" style="color: {{accent}};"><span class="idx">07</span>Princípios e decisões-chave</div>
+      <p>Microfrontends (shell + remotos); API Gateway como única porta pública; BFF por tipo de cliente; microsserviços com Database per Service; colaboração entre serviços por eventos (Azure Queue Storage); Clean Architecture + Vertical Slice em todo backend; regras de arquitetura verificadas por testes no CI. ADRs detalhados na seção 9 do Arc42.</p>
+    </div>
+
+    <div class="panel" style="grid-column: span 4;">
+      <div class="label" style="color: {{accent}};"><span class="idx">08</span>Dados</div>
+      <p>Pedido (banco <code>pjbl_pedidos</code>, dono: Serviço de Pedidos); Veículo e Entrega (banco <code>pjbl_frota</code>, dono: Serviço de Frota). A entrega é uma projeção mantida pelos eventos de pedido. Ver DER, seção 8.</p>
+    </div>
+
+    <div class="panel" style="grid-column: span 3;">
+      <div class="label" style="color: {{accent}};"><span class="idx">09</span>Roadmap (planejado)</div>
+      <ol>
+        <li>Autenticação por perfil (RF14)</li>
+        <li>Ingestão de telemetria OBD2/GPS + modo offline</li>
+        <li>App mobile do motorista + POD</li>
+        <li>Alertas e relatórios gerenciais</li>
+        <li>Mapa da frota em tempo real</li>
+      </ol>
+    </div>
+
+    <div class="panel" style="grid-column: span 12;">
+      <div class="label" style="color: {{accent}};"><span class="idx">10</span>Riscos e dívida técnica</div>
+      <ul class="risk-list">
+        <li>Sem autenticação de usuário.</li>
+        <li>Publicação de eventos sem <span class="sub">outbox</span>.</li>
+        <li>Consistência eventual entre serviços.</li>
+        <li><span class="sub">Cold start</span> em cadeia (gateway &rarr; BFF &rarr; serviço).</li>
+        <li>Rate limit por instância.</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#2f6f8f","options":["#2f6f8f","#3f6f4a","#8a4b2f","#3a3f7a"]}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? "#2f6f8f" };
+  }
+}
+</script>
+</body>
+</html>

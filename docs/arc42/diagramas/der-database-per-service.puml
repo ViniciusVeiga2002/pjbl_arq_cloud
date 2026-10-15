@@ -1,0 +1,58 @@
+@startuml der-database-per-service
+' Diagrama de Entidades e Relacionamentos (notação pé-de-galinha),
+' separado por banco: cada microsserviço é dono do seu (Database per
+' Service). Não existe chave estrangeira entre bancos — a relação entre
+' "pedidos" e "entregas" é mantida por eventos.
+skinparam dpi 180
+skinparam shadowing false
+hide circle
+skinparam linetype ortho
+
+title DER — Database per Service (pjbl_pedidos e pjbl_frota)
+
+package "Banco pjbl_pedidos — dono: Serviço de Pedidos" as bp {
+  entity "pedidos" as PEDIDO {
+    * id : string <<PK pública PED-NNNNNN>>
+    --
+    * cliente : string
+    * entregaId : string <<ref. lógica>>
+    veiculoPlaca : string <<ref. lógica>>
+    * status : string
+    * previsaoEntrega : ISO date
+    * criadoEm : ISO date
+    atualizadoEm : ISO date
+  }
+}
+
+package "Banco pjbl_frota — dono: Serviço de Frota" as bf {
+  entity "veiculos" as VEICULO {
+    * placa : string <<PK, índice único>>
+    --
+    motorista : string
+    * lat : double
+    * lng : double
+    * velocidade : int
+    * status : string
+    * registradoEm : ISO date
+  }
+  entity "entregas" as ENTREGA {
+    * id : string <<PK, índice único>>
+    --
+    veiculoPlaca : string
+    atualizadoEm : ISO date
+    * versao : int <<concorrência otimista>>
+  }
+  entity "entregas.pedidos[]" as PEDIDO_NA_ENTREGA {
+    * id : string
+    --
+    status : string
+    previsaoEntrega : ISO date
+    * excluido : boolean
+    * ocorridoEm : ISO date
+  }
+}
+
+ENTREGA ||--o{ PEDIDO_NA_ENTREGA : "embute (documento)"
+VEICULO |o..o{ ENTREGA : "placa (ref. lógica)"
+PEDIDO ||..o{ PEDIDO_NA_ENTREGA : "replicado por eventos\n(sem FK entre bancos)"
+@enduml

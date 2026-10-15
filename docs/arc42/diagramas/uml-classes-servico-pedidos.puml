@@ -1,0 +1,61 @@
+@startuml uml-classes-servico-pedidos
+' C4 Model - Nível 4: Diagrama de Classes (UML) do domínio do Serviço de
+' Pedidos. Os eventos são o único contrato com o Serviço de Frota.
+skinparam dpi 180
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title Classes do domínio (C4 Nível 4) — Serviço de Pedidos
+
+package "servico-pedidos :: dominio" {
+  class Pedido <<Entidade>> {
+    + id : String
+    + cliente : String
+    + entregaId : String
+    + veiculoPlaca : String
+    + status : StatusPedido
+    + previsaoEntrega : DateTime
+    + criadoEm : DateTime
+    + atualizadoEm : DateTime [0..1]
+    --
+    + {static} criar(dados) : Pedido
+    + {static} gerarIdPublico() : String
+    + {static} construirAtualizacaoParcial(campos) : Object
+  }
+  enum StatusPedido <<Value Object>> {
+    AGUARDANDO_COLETA
+    EM_ROTA
+    ENTREGUE
+    ATRASADO
+    --
+    + validar(valor) : String
+  }
+  class EventosDePedido <<Fábrica de eventos>> {
+    + pedidoCadastrado(p) : EventoDePedido
+    + pedidoAlterado(p) : EventoDePedido
+    + pedidoExcluido(p) : EventoDePedido
+  }
+  class EventoDePedido <<Evento de domínio>> {
+    + tipo : String
+    + versao : int
+    + ocorridoEm : DateTime
+    + dados : {id, entregaId, veiculoPlaca, status, previsaoEntrega}
+  }
+  class ErroDeValidacao <<Erro>>
+  class PedidoNaoEncontradoError <<Erro>>
+
+  Pedido --> StatusPedido
+  EventosDePedido ..> Pedido : lê
+  EventosDePedido ..> EventoDePedido : cria
+  Pedido ..> ErroDeValidacao : lança
+}
+
+
+note bottom of EventoDePedido
+  Publicado na fila <b>pedidos-eventos</b>.
+  Consumido pelo Serviço de Frota (Entrega.aplicar),
+  sem nenhuma dependência de código entre os serviços.
+end note
+@enduml

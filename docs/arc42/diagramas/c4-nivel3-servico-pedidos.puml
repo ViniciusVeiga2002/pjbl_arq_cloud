@@ -1,0 +1,35 @@
+@startuml c4-nivel3-servico-pedidos
+' C4 Model - Nível 3 (Componentes) do contêiner "Serviço de Pedidos".
+' Vertical Slice (uma fatia por caso de uso) + Clean Architecture.
+!include <C4/C4_Component>
+skinparam dpi 180
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Componentes (C4 Nível 3) — Serviço de Pedidos
+
+Container_Ext(bff, "BFF Web", "Azure Function", "Único cliente deste serviço")
+ContainerDb_Ext(db, "pjbl_pedidos", "MongoDB Atlas")
+ContainerQueue_Ext(fila, "Fila pedidos-eventos", "Azure Queue Storage")
+
+Container_Boundary(svc, "Serviço de Pedidos (Function App pjbl-arq-cloud-pedidos)") {
+  Component(fatias, "Fatias verticais (features/pedidos/*)", "4 × [*Function.js + *CasoDeUso.js + Porta + Comando]", "cadastrar-pedido · pesquisar-pedidos · alterar-pedido · excluir-pedido")
+  Component(composicao, "ContainerDeDependencias", "Composition Root", "Injeta os adaptadores concretos nos casos de uso")
+  Component(portaEventos, "PortaPublicadorDeEventos", "aplicacao/portas", "Porta compartilhada pelas fatias de escrita")
+  Component(dominio, "Domínio", "Pedido · StatusPedido · EventosDePedido · erros", "Regras de negócio; sem dependências externas")
+  Component(repositorio, "RepositorioDePedidosMongo", "infraestrutura/persistencia", "Uma fábrica por porta (ISP)")
+  Component(publicador, "PublicadorDeEventosEmFila", "infraestrutura/mensageria", "Envia o evento em Base64 para a fila")
+  Component(http, "RespostaHttp · mapearErroParaHttp", "infraestrutura/http", "Erro de domínio → 400/404")
+}
+
+Rel(bff, fatias, "GET/POST/PUT/DELETE /api/pedidos", "HTTPS + chave")
+Rel(fatias, composicao, "Obtém o caso de uso")
+Rel(fatias, dominio, "Aplica regras e monta eventos")
+Rel(fatias, portaEventos, "publicar(evento)")
+Rel_L(fatias, http, "Formata respostas")
+Rel(composicao, repositorio, "Instancia")
+Rel(composicao, publicador, "Instancia")
+Rel(publicador, portaEventos, "Implementa")
+Rel(repositorio, db, "Lê e grava", "TLS")
+Rel(publicador, fila, "sendMessage", "HTTPS")
+@enduml

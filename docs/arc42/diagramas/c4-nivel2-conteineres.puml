@@ -1,0 +1,51 @@
+@startuml c4-nivel2-conteineres
+' C4 Model - Nível 2 (Contêineres). Cada caixa é implantada e executada
+' separadamente.
+!include <C4/C4_Container>
+skinparam dpi 180
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Contêineres (C4 Nível 2) — Plataforma de Telemetria e Gestão de Entregas
+
+Person(coordenador, "Coordenador de Frota")
+System_Ext(obd2, "Dispositivo OBD2/GPS", "Simulado por scripts/simular-telemetria.js")
+
+System_Boundary(plataforma, "Plataforma de Telemetria e Gestão de Entregas") {
+  Boundary(frontend, "Frontend — Azure Static Web Apps") {
+    Container(shell, "Shell", "React 19 + Vite + Module Federation (host)", "Layout, abas e carregamento dos microfrontends em tempo de execução")
+    Container(mfePedidos, "mfe-pedidos", "React (remoto federado)", "Tela Pedidos por Entrega")
+    Container(mfeFrota, "mfe-frota", "React (remoto federado)", "Tela Mapa da Frota")
+  }
+
+  Container(gateway, "API Gateway", "Azure Function (Node.js 22)", "Única porta pública: rotas, CORS restrito, rate limit, correlation-id")
+  Container(bff, "BFF Web", "Azure Function (Node.js 22)", "Compõe os microsserviços no formato das telas")
+
+  Container(svcPedidos, "Serviço de Pedidos", "Azure Functions (Node.js 22)", "CRUD de pedidos; publica eventos de pedido")
+  Container(svcFrota, "Serviço de Frota", "Azure Functions (Node.js 22)", "Veículos (telemetria) e projeção de entregas")
+
+  ContainerQueue(filaPedidos, "Fila pedidos-eventos", "Azure Queue Storage", "PedidoCadastrado / Alterado / Excluido")
+  ContainerQueue(filaTelemetria, "Fila telemetria-veiculos", "Azure Queue Storage", "LeituraDeTelemetriaRecebida")
+
+  ContainerDb(dbPedidos, "pjbl_pedidos", "MongoDB Atlas", "Coleção pedidos")
+  ContainerDb(dbFrota, "pjbl_frota", "MongoDB Atlas", "Coleções veiculos e entregas")
+}
+
+Rel(coordenador, shell, "Usa", "HTTPS")
+Rel(shell, mfePedidos, "Carrega remoteEntry.js", "Module Federation")
+Rel(shell, mfeFrota, "Carrega remoteEntry.js", "Module Federation")
+Rel(mfePedidos, gateway, "/api/web/*", "JSON/HTTPS")
+Rel(mfeFrota, gateway, "/api/web/*", "JSON/HTTPS")
+Rel(gateway, bff, "Encaminha", "HTTPS + chave da Function")
+Rel(bff, svcPedidos, "Pedidos", "HTTPS + chave")
+Rel(bff, svcFrota, "Veículos e entregas", "HTTPS + chave")
+Rel_R(svcPedidos, filaPedidos, "Publica eventos")
+Rel_R(filaPedidos, svcFrota, "Queue Trigger")
+Rel(svcPedidos, dbPedidos, "Lê e grava", "TLS")
+Rel(svcFrota, dbFrota, "Lê e grava", "TLS")
+Rel_U(filaTelemetria, svcFrota, "Queue Trigger")
+Rel_U(obd2, filaTelemetria, "Publica leituras")
+Lay_R(svcPedidos, filaPedidos)
+Lay_R(filaPedidos, svcFrota)
+Lay_R(dbFrota, filaTelemetria)
+@enduml

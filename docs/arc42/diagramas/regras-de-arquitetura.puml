@@ -1,0 +1,45 @@
+@startuml regras-de-arquitetura
+' Regras verificadas pelos Testes Unitários de Arquitetura
+' (testes-arquitetura/*.test.js). Setas = dependências PERMITIDAS;
+' setas vermelhas com X = dependências PROIBIDAS (o teste falha).
+skinparam dpi 180
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+title Regras de dependência verificadas pelos testes de arquitetura
+
+package "Cada projeto de backend (gateway, bff-web, servico-pedidos, servico-frota)" {
+  rectangle "Adaptadores de entrada\nfeatures/<área>/<fatia>/*Function.js\n(@azure/functions)" as entrada
+  rectangle "Composition Root\ncomposicao/ContainerDeDependencias" as comp
+  rectangle "Aplicação\n*CasoDeUso · Porta* · Comando/Filtro\naplicacao/portas" as app
+  rectangle "Domínio\nentidades, value objects, eventos, erros\n(sem bibliotecas)" as dom
+  rectangle "Infraestrutura\npersistencia (mongodb) · mensageria (storage-queue)\nclientes (HTTP) · http" as infra
+}
+
+entrada --> comp : obtém o caso de uso
+entrada --> app
+comp --> app : instancia
+comp --> infra : instancia adaptadores
+app --> dom
+infra ..|> app : implementa portas
+infra --> dom
+
+dom -[#red,dashed]-> infra : X
+app -[#red,dashed]-> infra : X
+entrada -[#red,dashed]-> infra : X adaptador de saída
+
+note right of app
+  <b>Vertical Slice</b>: uma fatia não importa
+  outra; cada fatia tem 1 *Function.js
+  e 1 *CasoDeUso.js
+end note
+
+note bottom of infra
+  <b>Microsserviços</b>: nenhum projeto importa código de outro ·
+  bancos com nomes exclusivos · serviços sem HTTP de saída (só eventos) ·
+  BFF/Gateway sem mongodb · só o Gateway é anônimo · Gateway → só BFFs
+  <b>EDA</b>: fila publicada = fila consumida · tipos de evento aceitos
+  <b>Microfrontends</b>: shell só usa módulos federados · MFEs isolados ·
+  fetch só em services/ · só o Gateway é chamado · React singleton
+end note
+@enduml

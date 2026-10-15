@@ -1,0 +1,36 @@
+@startuml c4-nivel3-servico-frota
+' C4 Model - Nível 3 (Componentes) do contêiner "Serviço de Frota".
+!include <C4/C4_Component>
+skinparam dpi 180
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Componentes (C4 Nível 3) — Serviço de Frota
+
+Container_Ext(bff, "BFF Web", "Azure Function")
+ContainerQueue_Ext(filaPedidos, "Fila pedidos-eventos", "Azure Queue Storage")
+ContainerQueue_Ext(filaTelemetria, "Fila telemetria-veiculos", "Azure Queue Storage")
+ContainerDb_Ext(db, "pjbl_frota", "MongoDB Atlas", "veiculos · entregas")
+
+Container_Boundary(svc, "Serviço de Frota (Function App pjbl-arq-cloud-frota)") {
+  Component(registrar, "registrar-telemetria", "Fatia (Queue Trigger)", "Leitura OBD2/GPS → Veiculo")
+  Component(projecao, "atualizar-projecao-de-entrega", "Fatia (Queue Trigger)", "Evento de pedido → Entrega (com retentativa por concorrência)")
+  Component(listarVeiculos, "listar-veiculos", "Fatia (HTTP GET /veiculos)")
+  Component(listarEntregas, "listar-entregas", "Fatia (HTTP GET /entregas)")
+  Component(dominio, "Domínio", "Veiculo · StatusVeiculo · Entrega · erros", "Alerta de velocidade (> 80 km/h), situação da entrega, idempotência")
+  Component(composicao, "ContainerDeDependencias", "Composition Root")
+  Component(repos, "Repositórios MongoDB", "infraestrutura/persistencia", "Veículos (upsert por placa) e Entregas (concorrência otimista por versão)")
+}
+
+Rel(filaTelemetria, registrar, "Mensagem", "Queue Trigger")
+Rel(filaPedidos, projecao, "Mensagem", "Queue Trigger")
+Rel(bff, listarVeiculos, "GET", "HTTPS + chave")
+Rel(bff, listarEntregas, "GET", "HTTPS + chave")
+Rel(registrar, dominio, "Usa")
+Rel(projecao, dominio, "Usa")
+Rel(listarEntregas, dominio, "Usa")
+Rel(registrar, composicao, "Obtém caso de uso")
+Rel(listarVeiculos, composicao, "Obtém caso de uso")
+Rel(composicao, repos, "Instancia")
+Rel(repos, db, "Lê e grava", "TLS")
+@enduml

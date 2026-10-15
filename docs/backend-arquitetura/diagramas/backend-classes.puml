@@ -1,0 +1,147 @@
+@startuml backend-classes
+title Backend — Diagrama de Classes\nVertical Slice + Clean Architecture + SOLID
+
+hide empty members
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+package "Domínio" {
+  class Pedido {
+    +id: String
+    +cliente: String
+    +entregaId: String
+    +veiculoPlaca: String
+    +status: String
+    +previsaoEntrega: String
+    +criadoEm: String
+    +atualizadoEm: String
+    +{static} criar(dados): Pedido
+    +{static} gerarIdPublico(): String
+    +{static} camposAtualizaveis(): String[]
+    +{static} construirAtualizacaoParcial(campos): Object
+  }
+
+  class StatusPedido <<Value Object>> {
+    +{static} AGUARDANDO_COLETA: String
+    +{static} EM_ROTA: String
+    +{static} ENTREGUE: String
+    +{static} ATRASADO: String
+    +{static} padrao(): String
+    +{static} validar(valor): String
+  }
+
+  class ErroDeValidacao <<Erro de Domínio>>
+  class PedidoNaoEncontradoError <<Erro de Domínio>>
+
+  Pedido ..> StatusPedido : usa
+  Pedido ..> ErroDeValidacao : lança
+}
+
+package "Aplicação — Slices Verticais" {
+  package "cadastrar-pedido" {
+    class CadastrarPedidoComando
+    class CadastrarPedidoCasoDeUso
+    interface PortaRepositorioInsercao {
+      +inserir(pedido): Promise<Pedido>
+    }
+    CadastrarPedidoCasoDeUso ..> PortaRepositorioInsercao : depende (DIP)
+    CadastrarPedidoCasoDeUso ..> CadastrarPedidoComando
+    CadastrarPedidoCasoDeUso ..> Pedido : Pedido.criar(...)
+  }
+
+  package "pesquisar-pedidos" {
+    class PesquisarPedidosFiltro
+    class PesquisarPedidosCasoDeUso
+    interface PortaRepositorioConsulta {
+      +buscarComFiltro(criterios): Promise<Pedido[]>
+    }
+    PesquisarPedidosCasoDeUso ..> PortaRepositorioConsulta : depende (DIP)
+    PesquisarPedidosCasoDeUso ..> PesquisarPedidosFiltro
+  }
+
+  package "alterar-pedido" {
+    class AlterarPedidoComando
+    class AlterarPedidoCasoDeUso
+    interface PortaRepositorioAtualizacao {
+      +atualizarPorId(id, campos): Promise<Pedido>
+    }
+    AlterarPedidoCasoDeUso ..> PortaRepositorioAtualizacao : depende (DIP)
+    AlterarPedidoCasoDeUso ..> AlterarPedidoComando
+    AlterarPedidoCasoDeUso ..> Pedido : Pedido.construirAtualizacaoParcial(...)
+    AlterarPedidoCasoDeUso ..> PedidoNaoEncontradoError : lança
+  }
+
+  package "excluir-pedido" {
+    class ExcluirPedidoComando
+    class ExcluirPedidoCasoDeUso
+    interface PortaRepositorioExclusao {
+      +excluirPorId(id): Promise<Pedido>
+    }
+    ExcluirPedidoCasoDeUso ..> PortaRepositorioExclusao : depende (DIP)
+    ExcluirPedidoCasoDeUso ..> ExcluirPedidoComando
+    ExcluirPedidoCasoDeUso ..> PedidoNaoEncontradoError : lança
+  }
+}
+
+package "Infraestrutura" {
+  class ConexaoMongoDB {
+    +{static} obterColecaoDePedidos(): Collection
+  }
+
+  class RepositorioDePedidosMongo <<fábricas>> {
+    +{static} criarRepositorioDeInsercaoDePedidos()
+    +{static} criarRepositorioDeConsultaDePedidos()
+    +{static} criarRepositorioDeAtualizacaoDePedidos()
+    +{static} criarRepositorioDeExclusaoDePedidos()
+  }
+
+  class RespostaHttp <<helpers>> {
+    +{static} ok(corpo)
+    +{static} criado(corpo)
+    +{static} requisicaoInvalida(msg)
+    +{static} naoEncontrado(msg)
+    +{static} erroInterno(msg, detalhe)
+  }
+
+  class mapearErroParaHttp <<função>>
+
+  RepositorioDePedidosMongo ..|> PortaRepositorioInsercao
+  RepositorioDePedidosMongo ..|> PortaRepositorioConsulta
+  RepositorioDePedidosMongo ..|> PortaRepositorioAtualizacao
+  RepositorioDePedidosMongo ..|> PortaRepositorioExclusao
+  RepositorioDePedidosMongo ..> ConexaoMongoDB
+  mapearErroParaHttp ..> ErroDeValidacao
+  mapearErroParaHttp ..> PedidoNaoEncontradoError
+  mapearErroParaHttp ..> RespostaHttp
+}
+
+package "Composição" {
+  class ContainerDeDependencias <<Composition Root>> {
+    +{static} criarCadastrarPedidoCasoDeUso()
+    +{static} criarPesquisarPedidosCasoDeUso()
+    +{static} criarAlterarPedidoCasoDeUso()
+    +{static} criarExcluirPedidoCasoDeUso()
+  }
+
+  ContainerDeDependencias ..> RepositorioDePedidosMongo : injeta
+  ContainerDeDependencias ..> CadastrarPedidoCasoDeUso
+  ContainerDeDependencias ..> PesquisarPedidosCasoDeUso
+  ContainerDeDependencias ..> AlterarPedidoCasoDeUso
+  ContainerDeDependencias ..> ExcluirPedidoCasoDeUso
+}
+
+package "Apresentação — Azure Functions HTTP" {
+  class cadastrarPedidoFunction <<Azure Function>>
+  class pesquisarPedidosFunction <<Azure Function>>
+  class alterarPedidoFunction <<Azure Function>>
+  class excluirPedidoFunction <<Azure Function>>
+
+  cadastrarPedidoFunction ..> ContainerDeDependencias
+  cadastrarPedidoFunction ..> RespostaHttp
+  cadastrarPedidoFunction ..> mapearErroParaHttp
+  pesquisarPedidosFunction ..> ContainerDeDependencias
+  alterarPedidoFunction ..> ContainerDeDependencias
+  excluirPedidoFunction ..> ContainerDeDependencias
+}
+
+@enduml

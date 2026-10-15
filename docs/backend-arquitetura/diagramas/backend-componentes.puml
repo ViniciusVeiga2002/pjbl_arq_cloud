@@ -1,0 +1,71 @@
+@startuml backend-componentes
+title Backend — Diagrama de Componentes\nVertical Slice + Clean Architecture (Regra de Dependência)
+
+skinparam componentStyle rectangle
+
+package "Apresentação\n(Azure Functions HTTP)" as Presentation {
+  [cadastrarPedidoFunction]
+  [pesquisarPedidosFunction]
+  [alterarPedidoFunction]
+  [excluirPedidoFunction]
+}
+
+package "Aplicação\n(1 slice vertical por caso de uso)" as Application {
+  [Slice: cadastrar-pedido\n(Comando + CasoDeUso + Porta)]
+  [Slice: pesquisar-pedidos\n(Filtro + CasoDeUso + Porta)]
+  [Slice: alterar-pedido\n(Comando + CasoDeUso + Porta)]
+  [Slice: excluir-pedido\n(Comando + CasoDeUso + Porta)]
+}
+
+package "Domínio" as Domain {
+  [Pedido]
+  [StatusPedido]
+  [Erros de Domínio]
+}
+
+package "Infraestrutura" as Infra {
+  [RepositorioDePedidosMongo\n(implementa as 4 Portas)]
+  [ConexaoMongoDB]
+  [RespostaHttp / mapearErroParaHttp]
+}
+
+package "Composição" as Composicao {
+  [ContainerDeDependencias\n(Composition Root)]
+}
+
+database "MongoDB Atlas\n(coleção pedidos)" as Mongo
+
+Presentation --> Application : chama\nCasoDeUso.executar(comando)
+Presentation --> Infra : formata resposta HTTP\n(RespostaHttp / mapearErroParaHttp)
+Presentation --> Composicao : obtém o CasoDeUso\njá com dependências injetadas
+
+Application --> Domain : aplica regras e\ninvariantes de negócio
+
+Application ..> Infra : depende só das\nPortas (Dependency Inversion)
+Infra ..|> Application : implementa as\nPortas (uma por slice)
+Infra --> Mongo : driver oficial\n(mongodb)
+
+Composicao --> Application : instancia os\n4 casos de uso
+Composicao --> Infra : injeta o repositório\nMongo concreto
+
+note right of Application
+  Vertical Slice: cada pasta em
+  src/features/pedidos/<slice> é
+  uma fatia ponta-a-ponta (porta +
+  comando/filtro + caso de uso).
+end note
+
+note bottom of Infra
+  Única camada que conhece a
+  sintaxe do MongoDB ($regex, $set,
+  findOneAndUpdate). Trocar de banco
+  = reescrever só este pacote.
+end note
+
+note bottom of Composicao
+  Único módulo que conhece ao mesmo
+  tempo os casos de uso e o adaptador
+  concreto — Composition Root (DIP).
+end note
+
+@enduml

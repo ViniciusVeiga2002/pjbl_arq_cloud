@@ -1,0 +1,73 @@
+@startuml uml-classes-servico-frota
+' C4 Model - Nível 4: Diagrama de Classes (UML) do domínio do Serviço de
+' Frota (veículos + projeção de entregas alimentada por eventos).
+skinparam dpi 180
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title Classes do domínio (C4 Nível 4) — Serviço de Frota
+
+package "servico-frota :: dominio" {
+  class Veiculo <<Entidade>> {
+    + placa : String
+    + motorista : String
+    + lat : double
+    + lng : double
+    + velocidade : int
+    + status : StatusVeiculo
+    + registradoEm : DateTime
+    --
+    + {static} registrarLeitura(leitura) : Veiculo
+    + {static} calcularStatus(velocidade) : StatusVeiculo
+  }
+  enum StatusVeiculo <<Value Object>> {
+    OK
+    PARADO
+    ALERTA_VELOCIDADE
+  }
+  class Entrega <<Entidade / Projeção>> {
+    + id : String
+    + veiculoPlaca : String
+    + atualizadoEm : DateTime
+    + versao : int
+    --
+    + {static} nova(id) : Entrega
+    + {static} validarEvento(evento)
+    + aplicar(evento) : boolean
+    + desvincularPedido(pedidoId, ocorridoEm) : boolean
+    + situacao() : SituacaoEntrega
+    + resumo() : Object
+  }
+  class PedidoNaEntrega <<Value Object>> {
+    + id : String
+    + status : String
+    + excluido : boolean
+    + ocorridoEm : DateTime
+  }
+  enum SituacaoEntrega {
+    SEM_PEDIDOS
+    AGUARDANDO_COLETA
+    EM_ROTA
+    COM_ATRASO
+    CONCLUIDA
+  }
+  class "ErroDeValidacao " as ErroFrota <<Erro>>
+  class ErroDeConcorrencia <<Erro>>
+
+  Veiculo --> StatusVeiculo
+  Entrega "1" *-- "0..*" PedidoNaEntrega : pedidos
+  Entrega ..> SituacaoEntrega : calcula
+  Entrega ..> ErroFrota : lança
+  Veiculo -[hidden]down- Entrega
+  StatusVeiculo -[hidden]down- ErroDeConcorrencia
+}
+
+
+note bottom of Entrega
+  Projeção construída pelos eventos PedidoCadastrado,
+  PedidoAlterado e PedidoExcluido. "versao" garante a
+  concorrência otimista (ErroDeConcorrencia → reaplica).
+end note
+@enduml

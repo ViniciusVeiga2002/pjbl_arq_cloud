@@ -1,0 +1,23 @@
+@startuml c4-nivel1-contexto
+' C4 Model - Nível 1 (Contexto). O sistema é uma caixa-preta; aparecem as
+' pessoas e os sistemas externos com que ele troca informação.
+!include <C4/C4_Context>
+skinparam dpi 180
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Contexto (C4 Nível 1) — Plataforma de Telemetria e Gestão de Entregas
+
+Person(coordenador, "Coordenador de Frota", "Acompanha a frota e as entregas e mantém os pedidos.")
+Person(motorista, "Motorista", "Consulta as entregas do dia e registra a prova de entrega. [planejado]")
+Person(diretor, "Diretor de Logística", "Consulta indicadores e relatórios. [planejado]")
+
+System(plataforma, "Plataforma de Telemetria e Gestão de Entregas", "Dashboard web em microfrontends + API Gateway + BFF + microsserviços serverless orientados a eventos.")
+
+System_Ext(obd2, "Dispositivo OBD2/GPS do veículo", "Envia leituras de posição e velocidade. Hoje simulado por script.")
+
+Rel(coordenador, plataforma, "Gerencia pedidos e monitora a frota", "HTTPS")
+Rel(motorista, plataforma, "Consulta entregas e registra POD", "HTTPS [planejado]")
+Rel(diretor, plataforma, "Consulta KPIs", "HTTPS [planejado]")
+Rel(obd2, plataforma, "Publica leituras de telemetria", "Evento em fila")
+@enduml

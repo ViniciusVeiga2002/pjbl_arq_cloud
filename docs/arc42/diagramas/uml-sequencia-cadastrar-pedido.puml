@@ -1,0 +1,58 @@
+@startuml uml-sequencia-cadastrar-pedido
+' C4 Model - Nível 4: Sequência (UML). Cadastro de pedido ponta a ponta:
+' parte síncrona (HTTP) e parte assíncrona (evento na fila).
+skinparam dpi 180
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam defaultFontSize 14
+skinparam ParticipantPadding 4
+skinparam BoxPadding 4
+skinparam maxMessageSize 170
+hide footbox
+autonumber
+
+title Sequência — Coordenador cadastra um pedido (síncrono + evento)
+
+participant "mfe-pedidos" as MFE
+participant "API Gateway" as GW
+participant "BFF Web" as BFF
+box "Serviço de Pedidos" #EEF4FB
+participant "Function\nHTTP" as FnP
+participant "Cadastrar\nPedido\nCasoDeUso" as UC
+database "pjbl_pedidos" as DBP
+end box
+queue "pedidos-eventos" as Q
+box "Serviço de Frota" #EEF8F1
+participant "Queue Trigger\natualizar\nProjeção" as FnF
+database "pjbl_frota" as DBF
+end box
+
+MFE -> GW : POST /api/web/pedidos
+activate GW
+GW -> GW : CORS, rate limit,\ncorrelation-id
+GW -> BFF : POST /api/pedidos\n(x-functions-key)
+activate BFF
+BFF -> FnP : POST /api/pedidos (chave)
+activate FnP
+FnP -> UC : executar(comando)
+activate UC
+UC -> UC : Pedido.criar(comando)\n(domínio; inválido → 400)
+UC -> DBP : inserir(pedido)
+UC -> Q : publicar(PedidoCadastrado)
+UC --> FnP : pedido
+deactivate UC
+FnP --> BFF : 201 pedido
+deactivate FnP
+BFF --> GW : 201 pedido
+deactivate BFF
+GW --> MFE : 201 pedido
+deactivate GW
+
+== Assíncrono: o serviço de frota reage ao evento ==
+Q -> FnF : PedidoCadastrado
+activate FnF
+FnF -> DBF : obter entrega (versão n)
+FnF -> FnF : Entrega.aplicar(evento)
+FnF -> DBF : salvar se versão ainda for n
+deactivate FnF
+@enduml
