@@ -1,0 +1,94 @@
+.app {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.app-header h1 {
+  margin-bottom: 4px;
+  font-size: 1.6rem;
+}
+
+.app-header p {
+  margin-top: 0;
+  color: #52606d;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #d9e2ec;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #52606d;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-ativa {
+  color: #1f2933;
+  font-weight: 600;
+  border-bottom-color: #2563eb;
+}
+
+.aviso {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #e8f1fd;
+  border: 1px solid #b6d0f7;
+  color: #1e3a8a;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.aviso-fechar {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.carregando {
+  color: #52606d;
+}
+
+.falha-mfe {
+  background: #fff5f5;
+  border: 1px solid #f3c4c4;
+  color: #8a1c1c;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.falha-mfe p {
+  margin: 6px 0 12px;
+}
+
+.falha-mfe button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.app-footer {
+  margin-top: 32px;
+  color: #9aa5b1;
+  font-size: 0.85rem;
+  text-align: center;
+}

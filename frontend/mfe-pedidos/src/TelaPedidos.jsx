@@ -1,29 +1,40 @@
 import { useEffect, useState } from 'react';
 import {
-  getPedidos,
-  criarPedido,
-  atualizarPedido,
+  pesquisarPedidos,
+  cadastrarPedido,
+  alterarPedido,
   excluirPedido,
   concluirEntrega,
-} from '../services/api';
+  estaOffline,
+} from './services/apiPedidos';
+import './pedidos.css';
 
-// Tela 2 — Pedidos por entrega (persona: Coordenador de Frota, RF05/RF07)
+// Microfrontend "Pedidos por entrega" (persona: Coordenador de Frota,
+// RF05/RF07). Módulo EXPOSTO pelo remoto mfePedidos e montado pelo
+// shell em tempo de execução.
 //
-// Esta tela exercita as 4 Azure Functions de CRUD ligadas ao MongoDB Atlas
-// (ver GUIA_MONGODB_CRUD.md):
-//   pesquisar -> GET    /api/pedidos (com filtro opcional por cliente)
-//   inserir   -> POST   /api/pedidos
-//   alterar   -> PUT    /api/pedidos/{id}
-//   excluir   -> DELETE /api/pedidos/{id}
-// O botão "Concluir entrega" é uma funcionalidade anterior (Apidog, RF10)
-// e continua funcionando à parte, sem depender do MongoDB.
+// Todas as operações passam pelo API Gateway → BFF web:
+//   pesquisar        -> GET    /api/web/pedidos
+//   cadastrar        -> POST   /api/web/pedidos
+//   alterar          -> PUT    /api/web/pedidos/{id}
+//   excluir          -> DELETE /api/web/pedidos/{id}
+//   concluir entrega -> POST   /api/web/entregas/{id}/concluir
 const statusClasse = {
   'Em rota': 'status-em-rota',
   Entregue: 'status-entregue',
   Atrasado: 'status-atrasado',
 };
 
+const situacaoVeiculo = {
+  ok: { texto: 'Normal', classe: 'veiculo-ok' },
+  parado: { texto: 'Parado', classe: 'veiculo-parado' },
+  'alerta-velocidade': { texto: 'Excesso de velocidade', classe: 'veiculo-alerta' },
+};
+
 const STATUS_OPCOES = ['Aguardando coleta', 'Em rota', 'Entregue', 'Atrasado'];
+
+// Evento de navegador combinado com o shell (contrato entre microfrontends).
+const EVENTO_ENTREGA_CONCLUIDA = 'pjbl:entrega-concluida';
 
 const PEDIDO_VAZIO = {
   cliente: '',
@@ -45,10 +56,26 @@ function formatarData(iso) {
   });
 }
 
-export default function PedidosEntrega() {
+function CelulaVeiculo({ pedido }) {
+  if (!pedido.veiculoPlaca) return <td>—</td>;
+  const situacao = pedido.veiculo && situacaoVeiculo[pedido.veiculo.status];
+  return (
+    <td>
+      <div>{pedido.veiculoPlaca}</div>
+      {situacao && (
+        <span className={`badge ${situacao.classe}`} title={`${pedido.veiculo.velocidade} km/h`}>
+          {situacao.texto}
+        </span>
+      )}
+    </td>
+  );
+}
+
+export default function TelaPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const [offline, setOffline] = useState(false);
   const [concluindo, setConcluindo] = useState(null);
 
   const [filtroCliente, setFiltroCliente] = useState('');
@@ -60,24 +87,29 @@ export default function PedidosEntrega() {
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
   const [excluindoId, setExcluindoId] = useState(null);
 
-  async function carregarPedidos(filtros = {}) {
-    setCarregando(true);
+  async function executar(operacao) {
     setErro(null);
     try {
-      const dados = await getPedidos(filtros);
-      setPedidos(dados);
+      return await operacao();
     } catch (e) {
       setErro(e.message);
+      return null;
     } finally {
-      setCarregando(false);
+      setOffline(estaOffline());
     }
+  }
+
+  async function carregarPedidos(filtros = {}) {
+    setCarregando(true);
+    const dados = await executar(() => pesquisarPedidos(filtros));
+    if (dados) setPedidos(dados);
+    setCarregando(false);
   }
 
   useEffect(() => {
     carregarPedidos();
   }, []);
 
-  // --- Pesquisar (GET /api/pedidos?cliente=...) ---
   function handleBuscar(evento) {
     evento.preventDefault();
     carregarPedidos(filtroCliente ? { cliente: filtroCliente } : {});
@@ -88,22 +120,19 @@ export default function PedidosEntrega() {
     carregarPedidos();
   }
 
-  // --- Inserir (POST /api/pedidos) ---
   async function handleCriar(evento) {
     evento.preventDefault();
     if (!novoPedido.cliente || !novoPedido.entregaId) return;
 
     setCriando(true);
-    try {
-      await criarPedido(novoPedido);
+    const criado = await executar(() => cadastrarPedido(novoPedido));
+    setCriando(false);
+    if (criado) {
       setNovoPedido(PEDIDO_VAZIO);
       await carregarPedidos();
-    } finally {
-      setCriando(false);
     }
   }
 
-  // --- Alterar (PUT /api/pedidos/{id}) ---
   function handleIniciarEdicao(pedido) {
     setIdEmEdicao(pedido.id);
     setPedidoEditado({
@@ -111,7 +140,7 @@ export default function PedidosEntrega() {
       entregaId: pedido.entregaId,
       veiculoPlaca: pedido.veiculoPlaca,
       status: pedido.status,
-      previsaoEntrega: pedido.previsaoEntrega ? pedido.previsaoEntrega.slice(0, 19) : '',
+      previsaoEntrega: pedido.previsaoEntrega ? pedido.previsaoEntrega.slice(0, 16) : '',
     });
   }
 
@@ -123,43 +152,41 @@ export default function PedidosEntrega() {
   async function handleSalvarEdicao(evento) {
     evento.preventDefault();
     setSalvandoEdicao(true);
-    try {
-      await atualizarPedido(idEmEdicao, pedidoEditado);
+    const salvo = await executar(() => alterarPedido(idEmEdicao, pedidoEditado));
+    setSalvandoEdicao(false);
+    if (salvo) {
       handleCancelarEdicao();
       await carregarPedidos();
-    } finally {
-      setSalvandoEdicao(false);
     }
   }
 
-  // --- Excluir (DELETE /api/pedidos/{id}) ---
   async function handleExcluir(id) {
     if (!window.confirm(`Excluir o pedido ${id}? Essa ação não pode ser desfeita.`)) return;
     setExcluindoId(id);
-    try {
-      await excluirPedido(id);
-      await carregarPedidos();
-    } finally {
-      setExcluindoId(null);
-    }
+    const excluido = await executar(() => excluirPedido(id));
+    setExcluindoId(null);
+    if (excluido) await carregarPedidos();
   }
 
-  // --- Concluir entrega (Apidog, RF10 — funcionalidade anterior) ---
   async function handleConcluirEntrega(entregaId) {
     setConcluindo(entregaId);
-    try {
-      await concluirEntrega(entregaId);
-      setPedidos((atual) =>
-        atual.map((p) => (p.entregaId === entregaId ? { ...p, status: 'Entregue' } : p))
-      );
-    } finally {
-      setConcluindo(null);
+    const resultado = await executar(() => concluirEntrega(entregaId));
+    setConcluindo(null);
+    if (resultado) {
+      window.dispatchEvent(new CustomEvent(EVENTO_ENTREGA_CONCLUIDA, { detail: { entregaId } }));
+      await carregarPedidos();
     }
   }
 
   return (
-    <section>
+    <section className="mfe-pedidos">
       <h2>Pedidos por entrega</h2>
+
+      {offline && (
+        <p className="aviso-offline" role="status">
+          Modo offline: o API Gateway não respondeu. Os dados abaixo são locais e não estão sendo gravados.
+        </p>
+      )}
 
       <form className="barra-busca" onSubmit={handleBuscar}>
         <input
@@ -232,10 +259,10 @@ export default function PedidosEntrega() {
         </button>
       </form>
 
+      {erro && <p className="erro">{erro}</p>}
       {carregando && <p>Carregando pedidos…</p>}
-      {erro && <p className="erro">Erro ao carregar pedidos: {erro}</p>}
 
-      {!carregando && !erro && (
+      {!carregando && (
         <div className="tabela-container">
           <table>
             <thead>
@@ -311,7 +338,7 @@ export default function PedidosEntrega() {
                     <td>{p.id}</td>
                     <td>{p.cliente}</td>
                     <td>{p.entregaId}</td>
-                    <td>{p.veiculoPlaca}</td>
+                    <CelulaVeiculo pedido={p} />
                     <td>{formatarData(p.previsaoEntrega)}</td>
                     <td>
                       <span className={`badge ${statusClasse[p.status] || ''}`}>{p.status}</span>

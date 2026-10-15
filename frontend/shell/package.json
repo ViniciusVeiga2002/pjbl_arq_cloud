@@ -1,0 +1,22 @@
+{
+  "name": "shell",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Host (container) dos microfrontends: layout, navegação e carregamento dos remotos via Module Federation.",
+  "scripts": {
+    "dev": "vite --port 5173 --strictPort",
+    "build": "vite build",
+    "build:local": "vite build --mode development",
+    "preview": "vite preview --port 4173 --strictPort"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@module-federation/vite": "^1.23.5",
+    "@vitejs/plugin-react": "^6.1.0",
+    "vite": "^8.2.2"
+  }
+}

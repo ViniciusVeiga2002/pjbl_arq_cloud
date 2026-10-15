@@ -1,0 +1,118 @@
+/* Estilos do mfe-pedidos, com escopo na classe raiz .mfe-pedidos (CSS
+   aninhado): nada aqui vaza para o shell ou para outro microfrontend, e
+   nada de fora é necessário para a tela funcionar em modo isolado. */
+.mfe-pedidos {
+  color: #1f2933;
+
+  h2 { margin-top: 0; }
+
+  input, select, button { font-family: inherit; font-size: 0.9rem; }
+
+  input[type='text'], input[type='datetime-local'], select {
+    padding: 8px 10px;
+    border: 1px solid #cbd2d9;
+    border-radius: 6px;
+    background: #fff;
+  }
+
+  button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  button:disabled { opacity: 0.6; cursor: default; }
+  .btn-secundario { background: #e4e9ef; color: #1f2933; }
+  .btn-perigo { background: #d64545; }
+
+  .aviso-offline {
+    background: #fff8e6;
+    border: 1px solid #f2d48a;
+    color: #7a5600;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  .erro { color: #d64545; }
+
+  .barra-busca { display: flex; gap: 8px; margin-bottom: 16px; }
+  .barra-busca input[type='text'] { flex: 1; max-width: 320px; }
+
+  .form-pedido {
+    background: #fff;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .form-pedido h3 { margin-top: 0; font-size: 1rem; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: #52606d;
+  }
+
+  .tabela-container {
+    overflow-x: auto;
+    background: #fff;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e8ebee;
+    white-space: nowrap;
+    vertical-align: top;
+  }
+
+  th { background: #f4f6f8; font-weight: 600; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.8rem;
+    background: #64748b;
+  }
+
+  .status-em-rota { background: #2563eb; }
+  .status-entregue { background: #2e8b57; }
+  .status-atrasado { background: #d64545; }
+  .veiculo-ok { background: #2e8b57; margin-top: 4px; }
+  .veiculo-parado { background: #b58900; margin-top: 4px; }
+  .veiculo-alerta { background: #d64545; margin-top: 4px; }
+
+  .acoes-linha { display: flex; gap: 6px; }
+  .linha-edicao td { background: #f8fafc; }
+
+  .form-edicao {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  .acoes-edicao { display: flex; gap: 6px; }
+  .tabela-vazia { text-align: center; color: #9aa5b1; padding: 24px; }
+}

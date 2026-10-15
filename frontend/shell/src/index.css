@@ -1,0 +1,17 @@
+/* Estilos globais do shell: só a base visual comum (fonte, fundo, cores
+   do texto). Cada microfrontend traz os estilos das suas próprias telas,
+   com escopo na sua classe raiz (.mfe-pedidos, .mfe-frota). */
+:root {
+  color-scheme: light;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f6f8;
+  color: #1f2933;
+}

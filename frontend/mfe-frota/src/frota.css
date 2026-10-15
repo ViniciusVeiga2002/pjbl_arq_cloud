@@ -1,0 +1,72 @@
+/* Estilos do mfe-frota, com escopo na classe raiz .mfe-frota (CSS
+   aninhado). Independentes do mfe-pedidos: a duplicação de alguns estilos
+   de tabela é o preço consciente da autonomia entre microfrontends. */
+.mfe-frota {
+  color: #1f2933;
+
+  h2 { margin-top: 0; }
+  h3 { font-size: 1rem; margin: 24px 0 10px; }
+
+  .subtitulo { color: #52606d; margin-top: -4px; margin-bottom: 16px; }
+
+  .aviso-offline {
+    background: #fff8e6;
+    border: 1px solid #f2d48a;
+    color: #7a5600;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  .indicadores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .indicador {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+
+  .indicador-destaque { border-color: #f3c4c4; background: #fff5f5; }
+  .indicador-valor { font-size: 1.6rem; font-weight: 700; }
+  .indicador-rotulo { color: #52606d; font-size: 0.85rem; }
+
+  .tabela-container {
+    overflow-x: auto;
+    background: #fff;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e8ebee;
+    white-space: nowrap;
+  }
+
+  th { background: #f4f6f8; font-weight: 600; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.8rem;
+    background: #64748b;
+  }
+
+  .veiculo-ok, .entrega-concluida { background: #2e8b57; }
+  .veiculo-parado { background: #b58900; }
+  .veiculo-alerta, .entrega-atrasada { background: #d64545; }
+  .entrega-em-rota { background: #2563eb; }
+  .tabela-vazia { text-align: center; color: #9aa5b1; padding: 24px; }
+}

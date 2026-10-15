@@ -1,0 +1,16 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/assets/*", "/mfe-pedidos/*", "/mfe-frota/*", "/*.{svg,png,ico,js,css,json}"]
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin"
+  },
+  "routes": [
+    {
+      "route": "/mfe-*/remoteEntry.js",
+      "headers": { "Cache-Control": "no-cache" }
+    }
+  ]
+}

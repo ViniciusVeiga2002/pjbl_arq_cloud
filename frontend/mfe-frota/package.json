@@ -1,0 +1,22 @@
+{
+  "name": "mfe-frota",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Microfrontend remoto: tela Mapa da Frota (RF06/RF07/RF08). Exposto como mfeFrota/TelaFrota.",
+  "scripts": {
+    "dev": "vite --port 5175 --strictPort",
+    "build": "vite build",
+    "build:local": "vite build --mode development",
+    "preview": "vite preview --port 5175 --strictPort"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@module-federation/vite": "^1.23.5",
+    "@vitejs/plugin-react": "^6.1.0",
+    "vite": "^8.2.2"
+  }
+}

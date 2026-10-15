@@ -1,23 +1,20 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "2.0.0",
+  "description": "Dashboard do coordenador de frota em Microfrontends (Module Federation): shell + mfe-pedidos + mfe-frota.",
+  "workspaces": [
+    "shell",
+    "mfe-pedidos",
+    "mfe-frota"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "build": "npm run build --workspaces && node scripts/montar-dist.js",
+    "build:local": "npm run build:local --workspaces && node scripts/montar-dist.js",
+    "preview": "vite preview --config shell/vite.config.js --outDir dist --port 4173 --strictPort",
+    "lint": "oxlint shell/src mfe-pedidos/src mfe-frota/src"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.1.0",
-    "oxlint": "^1.79.0",
-    "vite": "^8.2.2"
+    "oxlint": "^1.79.0"
   }
 }
