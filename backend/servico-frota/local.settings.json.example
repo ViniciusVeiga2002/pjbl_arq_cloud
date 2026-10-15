@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "MONGODB_URI": "mongodb://localhost:27018",
+    "MONGODB_DB": "pjbl_frota",
+    "EVENTOS_STORAGE": "UseDevelopmentStorage=true"
+  }
+}

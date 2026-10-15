@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "BFF_WEB_URL": "http://localhost:7072/api",
+    "ORIGENS_PERMITIDAS": "http://localhost:5173,http://localhost:4173"
+  }
+}

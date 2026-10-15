@@ -1,0 +1,17 @@
+{
+  "name": "servico-frota",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Microsserviço de Frota (Azure Functions, Node.js v4) — veículos (telemetria OBD2/GPS) e projeção de entregas alimentada pelos eventos de pedidos. Banco próprio (MongoDB pjbl_frota). Vertical Slice + Clean Architecture.",
+  "main": "src/features/**/*Function.js",
+  "scripts": {
+    "start": "func start --port 7073",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "simular-telemetria": "node scripts/simular-telemetria.js"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.1",
+    "@azure/storage-queue": "^12.26.0",
+    "mongodb": "^6.10.0"
+  }
+}

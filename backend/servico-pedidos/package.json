@@ -1,0 +1,16 @@
+{
+  "name": "servico-pedidos",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Microsserviço de Pedidos (Azure Functions, Node.js v4) — CRUD de pedidos com banco próprio (MongoDB pjbl_pedidos) e publicação de eventos na fila pedidos-eventos. Vertical Slice + Clean Architecture.",
+  "main": "src/features/**/*Function.js",
+  "scripts": {
+    "start": "func start --port 7071",
+    "test": "node --test \"tests/**/*.test.js\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.1",
+    "@azure/storage-queue": "^12.26.0",
+    "mongodb": "^6.10.0"
+  }
+}

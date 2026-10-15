@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "SERVICO_PEDIDOS_URL": "http://localhost:7071/api",
+    "SERVICO_FROTA_URL": "http://localhost:7073/api"
+  }
+}
