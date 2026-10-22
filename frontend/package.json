@@ -12,9 +12,14 @@
     "build": "npm run build --workspaces && node scripts/montar-dist.js",
     "build:local": "npm run build:local --workspaces && node scripts/montar-dist.js",
     "preview": "vite preview --config shell/vite.config.js --outDir dist --port 4173 --strictPort",
-    "lint": "oxlint shell/src mfe-pedidos/src mfe-frota/src"
+    "lint": "oxlint shell/src mfe-pedidos/src mfe-frota/src",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
-    "oxlint": "^1.79.0"
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "oxlint": "^1.79.0",
+    "typescript": "^5.9.3"
   }
 }

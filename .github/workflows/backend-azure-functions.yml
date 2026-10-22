@@ -43,8 +43,15 @@ jobs:
         with:
           node-version: 22
 
-      - name: Instalar dependências de produção
-        run: npm ci --omit=dev --prefix backend/${{ matrix.projeto }}
+      # O código é TypeScript: compila para dist/ (o "main" do package.json
+      # aponta para lá) e só depois remove as dependências de desenvolvimento.
+      - name: Instalar dependências e compilar
+        run: |
+          npm ci --prefix backend/${{ matrix.projeto }}
+          npm run build --prefix backend/${{ matrix.projeto }}
+
+      - name: Manter só as dependências de produção
+        run: npm prune --omit=dev --prefix backend/${{ matrix.projeto }}
 
       - name: Publicar no Function App ${{ matrix.function_app }}
         uses: Azure/functions-action@v1

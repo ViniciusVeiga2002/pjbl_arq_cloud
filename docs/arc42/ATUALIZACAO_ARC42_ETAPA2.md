@@ -13,15 +13,15 @@ Word. Os textos entre blocos de citação (`>`) já estão prontos para colar.
 | Conceito exigido | Onde está no código | Onde entra no Arc42 |
 |---|---|---|
 | **Serverless** | Os 4 backends são Azure Functions no plano de Consumo (`backend/*/host.json`, `app.http`/`app.storageQueue`); frontend no Static Web Apps | 2, 4, 7, ADR-02 |
-| **Microfrontend** | `frontend/shell` (host) + `frontend/mfe-pedidos` e `frontend/mfe-frota` (remotos), Module Federation (`vite.config.js` de cada um) | 4, 5.1, 5.3.3, ADR-08 |
+| **Microfrontend** | `frontend/shell` (host) + `frontend/mfe-pedidos` e `frontend/mfe-frota` (remotos), Module Federation (`vite.config.ts` de cada um) | 4, 5.1, 5.3.3, ADR-08 |
 | **BFF** | `backend/bff-web` — compõe pedidos + veículos, monta o painel, orquestra "concluir entrega" | 4, 5.1, 5.2, ADR-10 |
 | **Microsserviços** | `backend/servico-pedidos` e `backend/servico-frota`, cada um com `package.json`, `host.json` e deploy próprios | 4, 5.1, 5.2, ADR-11 |
 | **Database per Service** | `pjbl_pedidos` (só o serviço de pedidos) e `pjbl_frota` (só o de frota), usuários do Atlas separados | 5.1, 8.1, ADR-11 |
 | **API Gateway** | `backend/gateway` — única Function anônima: rotas, CORS restrito, rate limit, correlation-id | 4, 5.1, 5.2, 8.5, ADR-09 |
 | **EDA** | Fila `pedidos-eventos` (PedidoCadastrado/Alterado/Excluido) e fila `telemetria-veiculos`; consumidores com Queue Trigger no serviço de frota | 4, 6, 8.12, ADR-12 |
 | **Clean Architecture** | Em todos os backends: `dominio/` · `aplicacao/` · `features/` · `infraestrutura/` · `composicao/` | 5.2, 5.3, 8.10, ADR-13 |
-| **Vertical Slice** | `features/<área>/<fatia>/` com `*Function.js` + `*CasoDeUso.js` + `Porta*` + `Comando`/`Filtro` | 5.2, 8.10, ADR-13 |
-| **Testes Unitários de Arquitetura** | `testes-arquitetura/*.test.js` (65 regras) + 76 testes de unidade em `backend/*/tests` | 8.11, 10, ADR-14 |
+| **Vertical Slice** | `features/<área>/<fatia>/` com `*Function.ts` + `*CasoDeUso.ts` + `Porta*` + `Comando`/`Filtro` | 5.2, 8.10, ADR-13 |
+| **Testes Unitários de Arquitetura** | `testes-arquitetura/*.test.ts` (84 regras) + 76 testes de unidade em `backend/*/tests` | 8.11, 10, ADR-14 |
 
 ---
 
@@ -82,7 +82,7 @@ Alterar só a coluna "Situação nesta entrega":
 
 | Req. | Nova situação |
 |---|---|
-| RF01 | Parcial (leituras simuladas por `scripts/simular-telemetria.js`, publicadas em fila) |
+| RF01 | Parcial (leituras simuladas por `scripts/simular-telemetria.ts`, publicadas em fila) |
 | RF02 | Parcial (posição GPS recebida pela fila `telemetria-veiculos`; origem simulada) |
 | RF06 | Implementado (posição e velocidade reais recebidas por telemetria; mapa gráfico ainda em forma de tabela) |
 | RF07 | Implementado (pedidos por entrega + situação consolidada da entrega no serviço de frota) |
@@ -151,7 +151,7 @@ Substituir OC04 por:
 Acrescentar:
 
 > CV05 — Todo backend segue a mesma estrutura: `dominio/`, `aplicacao/`,
-> `features/<área>/<fatia>/` (com `*Function.js`, `*CasoDeUso.js`, `Porta*`
+> `features/<área>/<fatia>/` (com `*Function.ts`, `*CasoDeUso.ts`, `Porta*`
 > e `Comando`/`Filtro`), `infraestrutura/` e `composicao/`. As regras de
 > dependência entre essas pastas são verificadas pelos testes de
 > arquitetura.
@@ -208,7 +208,7 @@ Substituir a tabela inteira por:
 | Autonomia de dados (Q4) | **Database per Service** | `pjbl_pedidos` e `pjbl_frota`, com usuário próprio por serviço |
 | Desacoplamento temporal entre serviços (Q1, Q4) | **Arquitetura Orientada a Eventos** | Pedidos publica eventos; Frota consome e mantém a sua projeção de entregas; telemetria entra por fila |
 | Regras de negócio protegidas de frameworks (Q3, Q4) | **Clean Architecture** + **Vertical Slice** | Domínio sem bibliotecas; uma fatia por caso de uso; Composition Root injeta os adaptadores |
-| Arquitetura que não se degrada com o tempo (Q3) | **Testes Unitários de Arquitetura** | 65 regras verificadas no código a cada push, antes de qualquer deploy |
+| Arquitetura que não se degrada com o tempo (Q3) | **Testes Unitários de Arquitetura** | 84 regras verificadas no código a cada push, antes de qualquer deploy |
 | Disponibilidade com rede instável (Q1) | Degradação graciosa em camadas | MFE com modo offline visível; BFF devolve pedidos mesmo sem o serviço de frota; filas com retentativa |
 
 ---
@@ -286,11 +286,11 @@ Substituir a tabela inteira por:
 
 Parágrafo a acrescentar abaixo da tabela:
 
-> Cada fatia contém o seu adaptador de entrada (`*Function.js`), o caso de
-> uso (`*CasoDeUso.js`), a porta (interface) de que precisa e o
+> Cada fatia contém o seu adaptador de entrada (`*Function.ts`), o caso de
+> uso (`*CasoDeUso.ts`), a porta (interface) de que precisa e o
 > comando/filtro de entrada. As fatias não se conhecem entre si; o que elas
 > compartilham fica em `dominio/` e `aplicacao/`, e só o Composition Root
-> (`composicao/ContainerDeDependencias.js`) conhece as implementações de
+> (`composicao/ContainerDeDependencias.ts`) conhece as implementações de
 > MongoDB, fila e HTTP.
 
 ### 5.3 Nível 3 — Detalhes
@@ -323,7 +323,7 @@ Parágrafo a acrescentar abaixo da tabela:
 - Substituir o parágrafo por:
 
 > O shell (host) contém apenas o layout, o registro dos microfrontends
-> (`microfrontends.js`) e um limite de falha por microfrontend. Cada remoto
+> (`microfrontends.ts`) e um limite de falha por microfrontend. Cada remoto
 > expõe uma tela pelo seu `remoteEntry.js` (`mfePedidos/TelaPedidos`,
 > `mfeFrota/TelaFrota`), que o shell importa em tempo de execução. Cada
 > microfrontend tem a sua própria camada `services/`, a única que faz
@@ -527,7 +527,7 @@ Substituir o texto por:
 
 > Todos os backends seguem a mesma organização. A **Regra de Dependência**
 > da Clean Architecture aponta sempre para dentro: adaptadores de entrada
-> (`*Function.js`) → aplicação (casos de uso, portas, comandos) → domínio
+> (`*Function.ts`) → aplicação (casos de uso, portas, comandos) → domínio
 > (sem bibliotecas). A infraestrutura (MongoDB, fila, clientes HTTP)
 > implementa as portas e só é conhecida pelo Composition Root, que injeta os
 > adaptadores nos casos de uso (Inversão de Dependência).
@@ -544,19 +544,22 @@ Substituir o texto por:
 - Texto:
 
 > As decisões de arquitetura são verificadas **no código real** por testes
-> automatizados, no estilo do ArchUnit, escritos com o executor nativo do
-> Node (`node:test`) e sem dependências externas
-> (`testes-arquitetura/`). Um utilitário lê os `require`/`import` de cada
-> arquivo e monta o grafo de dependências; cada regra percorre o grafo e
-> falha listando as violações encontradas. São 65 verificações:
+> automatizados, escritos com o **ArchUnitTS** (pacote `archunit`) sobre o
+> código TypeScript e executados pelo `node:test`
+> (`testes-arquitetura/`). O ArchUnitTS monta o grafo de dependências a
+> partir do `tsconfig.json` de cada projeto; cada regra
+> (`projectFiles().inFolder(...).shouldNot().dependOnFiles()...`) falha
+> listando as violações. Para o que o grafo não cobre (bibliotecas externas,
+> textos como `authLevel`) usa-se `adhereTo()` com a leitura do código. São
+> 84 verificações:
 >
 > | Arquivo | O que garante |
 > |---|---|
-> | `backend-clean-architecture.test.js` | Domínio sem bibliotecas nem outras camadas; aplicação só depende de aplicação e domínio; `mongodb`/`storage-queue` só na infraestrutura e `@azure/functions` só nos adaptadores de entrada; só o Composition Root conhece adaptadores de saída; Functions não instanciam casos de uso |
-> | `backend-vertical-slice.test.js` | Fatias existentes = fatias documentadas; cada fatia tem 1 `*Function.js` e 1 `*CasoDeUso.js`; fatia não importa fatia |
-> | `backend-microsservicos-bff-gateway.test.js` | Nenhum projeto importa código de outro; bancos com nomes exclusivos e nunca citados por outro serviço; BFF e gateway sem banco; microsserviços sem HTTP de saída; gateway só roteia para BFFs; só o gateway é anônimo; todo ponto de entrada é uma Azure Function |
-> | `arquitetura-orientada-a-eventos.test.js` | Fila publicada = fila consumida; todo tipo de evento publicado é aceito pelo consumidor; envelope versionado; toda escrita publica evento e a leitura não; só a infraestrutura conhece a fila |
-> | `frontend-microfrontends.test.js` | Shell e remotos com build próprio e Module Federation; nenhum importa código de outro; shell usa só módulos federados; remotos registrados e expostos; React singleton; `fetch` só em `services/`; microfrontends só chamam o gateway; CSS com escopo |
+> | `backend-clean-architecture.test.ts` | Domínio sem bibliotecas nem outras camadas; aplicação só depende de aplicação e domínio; `mongodb`/`storage-queue` só na infraestrutura e `@azure/functions` só nos adaptadores de entrada; só o Composition Root conhece adaptadores de saída; Functions não instanciam casos de uso |
+> | `backend-vertical-slice.test.ts` | Fatias existentes = fatias documentadas; cada fatia tem 1 `*Function.ts` e 1 `*CasoDeUso.ts`; fatia não importa fatia |
+> | `backend-microsservicos-bff-gateway.test.ts` | Nenhum projeto importa código de outro; bancos com nomes exclusivos e nunca citados por outro serviço; BFF e gateway sem banco; microsserviços sem HTTP de saída; gateway só roteia para BFFs; só o gateway é anônimo; todo ponto de entrada é uma Azure Function |
+> | `arquitetura-orientada-a-eventos.test.ts` | Fila publicada = fila consumida; todo tipo de evento publicado é aceito pelo consumidor; envelope versionado; toda escrita publica evento e a leitura não; só a infraestrutura conhece a fila |
+> | `frontend-microfrontends.test.ts` | Shell e remotos com build próprio e Module Federation; nenhum importa código de outro; shell usa só módulos federados; remotos registrados e expostos; React singleton; `fetch` só em `services/`; microfrontends só chamam o gateway; CSS com escopo |
 >
 > Para garantir que as regras realmente detectam problemas, foram
 > injetadas violações de propósito (domínio importando `mongodb`, fatia
@@ -602,7 +605,7 @@ Alterar ADR-02, ADR-05 e ADR-07 e acrescentar ADR-08 a ADR-16.
 | ADR-11 | Dois microsserviços (Pedidos e Frota) com Database per Service | Pedidos e frota mudam por motivos diferentes; a telemetria tem volume próprio | Sem joins entre bancos; dados replicados por eventos; consistência eventual (R12) |
 | ADR-12 | Colaboração por eventos em Azure Queue Storage | Barato, nativo do Functions (Queue Trigger), emulável localmente (Azurite) | Uma fila por consumidor; sem *fan-out* nativo — para vários consumidores, migrar para Service Bus Topics ou Event Grid |
 | ADR-13 | Clean Architecture + Vertical Slice em todos os backends | Mesma estrutura em 4 projetos facilita a manutenção e a verificação automática | Mais arquivos por caso de uso |
-| ADR-14 | Testes de arquitetura com `node:test` e um analisador de imports próprio | Sem dependências; regras específicas do projeto (bancos, filas, gateway) | O analisador cobre `require`/`import` estáticos e dinâmicos com texto literal |
+| ADR-14 | Testes de arquitetura com ArchUnitTS (executados pelo `node:test`) sobre o código TypeScript | Biblioteca específica para regras de arquitetura em TypeScript (camadas, ciclos, dependências entre pastas), em vez de um analisador próprio | Dependência de desenvolvimento a mais; regras sobre bibliotecas externas e textos ainda usam `adhereTo()` com leitura do código |
 | ADR-15 | Concorrência otimista (campo `versao`) na projeção de entregas | Mensagens da mesma entrega são processadas em paralelo | Retentativa no caso de uso; índice único em `entregas.id` |
 | ADR-16 | Publicação de eventos "melhor esforço", sem *Transactional Outbox* | Simplicidade no escopo acadêmico | Evento pode se perder se a fila falhar logo após a gravação (R11) |
 

@@ -43,7 +43,7 @@ Theo Otto e Vinicius Veiga. Prompts de IA generativa usados: [Prompt.md](Prompt.
 │   ├── bff-web/                   # Backend for Frontend (porta 7072)
 │   ├── servico-pedidos/           # microsserviço + banco pjbl_pedidos (porta 7071)
 │   └── servico-frota/             # microsserviço + banco pjbl_frota (porta 7073)
-├── testes-arquitetura/            # 65 regras de arquitetura (node:test)
+├── testes-arquitetura/            # 84 regras de arquitetura (ArchUnitTS)
 ├── docker-compose.yml             # MongoDB ×2 + Azurite para rodar localmente
 └── docs/arc42/                    # documentação de arquitetura e diagramas
 ```
@@ -55,7 +55,7 @@ src/
 ├── dominio/                 # entidades, value objects, eventos, erros — sem bibliotecas
 ├── aplicacao/               # portas compartilhadas entre fatias
 ├── features/<área>/<fatia>/ # uma pasta por caso de uso:
-│                            #   *Function.js (entrada) · *CasoDeUso.js · Porta* · Comando/Filtro
+│                            #   *Function.ts (entrada) · *CasoDeUso.ts · Porta* · Comando/Filtro
 ├── infraestrutura/          # MongoDB, fila, clientes HTTP, respostas HTTP
 └── composicao/              # Composition Root: injeta a infraestrutura nos casos de uso
 ```
@@ -114,11 +114,13 @@ Para desenvolver um microfrontend isolado: `npm run dev -w mfe-pedidos`
 ```bash
 npm test                    # tudo: unidade + arquitetura
 npm run test:unidade        # 76 testes de unidade dos 4 backends
-npm run test:arquitetura    # 65 regras de arquitetura
+npm run test:arquitetura    # 84 regras de arquitetura (ArchUnitTS)
 ```
 
-Os testes de arquitetura (`testes-arquitetura/`) leem os `require`/`import`
-do código real e verificam: a Regra de Dependência da Clean Architecture,
+O código de backend e frontend é TypeScript (os backends compilam para `dist/`
+com `npm run build`; os testes rodam direto com `tsx`). Os testes de
+arquitetura (`testes-arquitetura/`) usam o [ArchUnitTS](https://github.com/LukasNiessen/ArchUnitTS)
+sobre o código real e verificam: a Regra de Dependência da Clean Architecture,
 o isolamento entre fatias verticais, a independência entre microsserviços e
 seus bancos, que só o gateway é público e só roteia para BFFs, o contrato
 de eventos entre produtor e consumidor e o isolamento entre

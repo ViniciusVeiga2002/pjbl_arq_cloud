@@ -2,8 +2,14 @@
   "name": "testes-arquitetura",
   "private": true,
   "version": "1.0.0",
-  "description": "Testes unitários de arquitetura (estilo ArchUnit, com node:test): verificam no código real as regras de Clean Architecture, Vertical Slice, Microsserviços, Database per Service, BFF, API Gateway, EDA, Serverless e Microfrontends.",
+  "description": "Testes de arquitetura com ArchUnitTS (rodando no node:test): verificam no código TypeScript real as regras de Clean Architecture, Vertical Slice, Microsserviços, Database per Service, BFF, API Gateway, EDA, Serverless e Microfrontends.",
   "scripts": {
-    "test": "node --test \"*.test.js\""
+    "test": "tsx --test \"*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "archunit": "^2.5.4",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
   }
 }

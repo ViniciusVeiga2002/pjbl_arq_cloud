@@ -27,14 +27,25 @@ jobs:
             npm ci --prefix backend/$projeto
           done
 
+      - name: Checagem de tipos e build do backend (TypeScript)
+        run: |
+          for projeto in gateway bff-web servico-pedidos servico-frota; do
+            npm run typecheck --prefix backend/$projeto
+            npm run build --prefix backend/$projeto
+          done
+
       - name: Testes de unidade (4 Function Apps)
         run: npm run test:unidade
+
+      - name: Instalar dependências dos testes de arquitetura (ArchUnitTS)
+        run: npm ci --prefix testes-arquitetura
 
       - name: Testes de arquitetura
         run: npm run test:arquitetura
 
-      - name: Build dos microfrontends
+      - name: Checagem de tipos e build dos microfrontends
         working-directory: frontend
         run: |
           npm ci
+          npm run typecheck
           npm run build
