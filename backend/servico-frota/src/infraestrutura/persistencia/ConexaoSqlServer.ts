@@ -1,4 +1,14 @@
-import sql from 'mssql';
+import type * as MssqlTipos from 'mssql';
+
+// O pacote "mssql" é carregado só quando o adaptador Azure SQL é usado
+// (SQL_CONNECTION_STRING definida). Ele fica em devDependencies para não
+// pesar no pacote do Function App, que usa MongoDB por padrão; para ativar o
+// Azure SQL em produção, mova "mssql" para "dependencies".
+type Mssql = typeof MssqlTipos;
+let modulo: Mssql | null = null;
+const carregar = (): Mssql => (modulo ??= require('mssql') as Mssql);
+const sql = new Proxy({} as Mssql, { get: (_alvo, propriedade) => (carregar() as unknown as Record<string | symbol, unknown>)[propriedade] }) as Mssql;
+type ConnectionPool = MssqlTipos.ConnectionPool;
 
 // Conexão cacheada com o Azure SQL Database do servico-frota (mesmo padrão
 // serverless dos demais serviços: a Promise do pool é reaproveitada entre
@@ -16,12 +26,12 @@ const ESPERA_MS = 5000;
 
 const SQL_DB_PADRAO = 'pjbl_frota';
 
-let poolPromise: Promise<sql.ConnectionPool> | null = null;
+let poolPromise: Promise<ConnectionPool> | null = null;
 let esquemaPromise: Promise<unknown> | null = null;
 
 const dormir = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function conectarComTentativas(cadeia: string): Promise<sql.ConnectionPool> {
+async function conectarComTentativas(cadeia: string): Promise<ConnectionPool> {
   let ultimoErro: unknown;
   for (let tentativa = 1; tentativa <= TENTATIVAS; tentativa++) {
     try {
@@ -34,7 +44,7 @@ async function conectarComTentativas(cadeia: string): Promise<sql.ConnectionPool
   throw ultimoErro;
 }
 
-function obterPromiseDoPool(): Promise<sql.ConnectionPool> {
+function obterPromiseDoPool(): Promise<ConnectionPool> {
   const cadeia = process.env.SQL_CONNECTION_STRING;
   if (!cadeia) {
     throw new Error('Variável de ambiente SQL_CONNECTION_STRING não configurada. Veja local.settings.json.example.');
@@ -50,7 +60,7 @@ function obterPromiseDoPool(): Promise<sql.ConnectionPool> {
 
 // Tabelas criadas uma vez por instância (idempotente): "placa" identifica o
 // veículo e "id" a entrega (base do controle de concorrência otimista).
-function garantirEsquema(pool: sql.ConnectionPool): Promise<unknown> {
+function garantirEsquema(pool: ConnectionPool): Promise<unknown> {
   if (!esquemaPromise) {
     esquemaPromise = pool
       .request()
@@ -84,7 +94,7 @@ function garantirEsquema(pool: sql.ConnectionPool): Promise<unknown> {
 
 export const NOME_DO_BANCO = SQL_DB_PADRAO;
 
-export async function obterPool(): Promise<sql.ConnectionPool> {
+export async function obterPool(): Promise<ConnectionPool> {
   const pool = await obterPromiseDoPool();
   await garantirEsquema(pool);
   return pool;
