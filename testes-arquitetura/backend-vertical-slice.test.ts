@@ -18,8 +18,10 @@ import {
 // Fatias que DEVEM existir: se uma for renomeada ou removida, a
 // documentação de arquitetura também precisa mudar.
 const FATIAS_ESPERADAS: Record<ProjetoDeBackend, string[]> = {
-  gateway: ['roteamento/encaminhar-requisicao'],
+  gateway: ['documentacao/swagger', 'roteamento/encaminhar-requisicao'],
   'bff-web': [
+    'agregacao/obter-dados-agregados',
+    'documentacao/swagger',
     'painel/obter-painel-frota',
     'pedidos/alterar-pedido',
     'pedidos/cadastrar-pedido',
@@ -28,17 +30,20 @@ const FATIAS_ESPERADAS: Record<ProjetoDeBackend, string[]> = {
     'pedidos/pesquisar-pedidos',
   ],
   'servico-pedidos': [
+    'documentacao/swagger',
     'pedidos/alterar-pedido',
     'pedidos/cadastrar-pedido',
     'pedidos/excluir-pedido',
     'pedidos/pesquisar-pedidos',
   ],
   'servico-frota': [
+    'documentacao/swagger',
     'entregas/atualizar-projecao-de-entrega',
     'entregas/listar-entregas',
     'veiculos/listar-veiculos',
     'veiculos/registrar-telemetria',
   ],
+  'funcao-enriquecimento': ['documentacao/swagger', 'enriquecimento/calcular-risco'],
 };
 
 const arquivos = (projeto: ProjetoDeBackend) => projectFiles(tsconfigDoBackend(projeto));
@@ -74,10 +79,12 @@ for (const projeto of PROJETOS_DE_BACKEND) {
     );
   });
 
-  test(`[${projeto}] cada fatia tem um adaptador de entrada (*Function.ts) e um caso de uso (*CasoDeUso.ts)`, async () => {
+  test(`[${projeto}] cada fatia tem um adaptador de entrada (*Function.ts) e um caso de uso (*CasoDeUso.ts; a fatia de documentação não tem caso de uso)`, async () => {
     for (const [fatia, nomes] of await inventarioDeFatias(projeto)) {
       assert.equal(nomes.filter((n) => n.endsWith('Function')).length, 1, `${fatia}: deve ter 1 *Function.ts`);
-      assert.equal(nomes.filter((n) => n.endsWith('CasoDeUso')).length, 1, `${fatia}: deve ter 1 *CasoDeUso.ts`);
+      // Fatia de documentação (Swagger): só serve a especificação, sem regra de negócio.
+      const casosDeUsoEsperados = fatia.startsWith('documentacao/') ? 0 : 1;
+      assert.equal(nomes.filter((n) => n.endsWith('CasoDeUso')).length, casosDeUsoEsperados, `${fatia}: deve ter ${casosDeUsoEsperados} *CasoDeUso.ts`);
     }
   });
 

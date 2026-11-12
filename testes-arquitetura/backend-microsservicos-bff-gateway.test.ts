@@ -8,6 +8,7 @@ import {
   MICROSSERVICOS,
   PROJETOS_DE_BACKEND,
   TSCONFIG_DO_BACKEND,
+  caminhoDoProjeto,
   condicao,
   ehAdaptadorDeEntrada,
   importacoesDe,
@@ -29,8 +30,15 @@ function lerPackageJson(projeto: ProjetoDeBackend): { main: string; dependencies
 }
 
 function nomeDoBancoDe(servico: ProjetoDeBackend): string {
-  const codigo = semComentarios(lerTexto('backend', servico, 'src', 'infraestrutura', 'persistencia', 'ConexaoMongoDB.ts'));
-  return codigo.match(/MONGODB_DB_PADRAO\s*=\s*'([^']+)'/)![1];
+  // Cada serviço declara o nome do SEU banco na conexão (MongoDB ou Azure SQL);
+  // o servico-frota tem as duas conexões e o nome precisa ser o mesmo.
+  const pasta = path.join('backend', servico, 'src', 'infraestrutura', 'persistencia');
+  const nomes = fs
+    .readdirSync(caminhoDoProjeto(pasta))
+    .filter((nome) => nome.startsWith('Conexao'))
+    .map((nome) => semComentarios(lerTexto(pasta, nome)).match(/(?:MONGODB_DB_PADRAO|SQL_DB_PADRAO)\s*=\s*'([^']+)'/)![1]);
+  assert.equal(new Set(nomes).size, 1, `${servico}: conexões apontam para bancos diferentes (${nomes.join(', ')})`);
+  return nomes[0];
 }
 
 // Caminhos (relativos ao tsconfig) dos arquivos que casam com o filtro, vistos pelo ArchUnitTS.
@@ -113,6 +121,7 @@ test('microsserviços não chamam outros serviços por HTTP (colaboram só por e
 
 test('BFF: só ele conhece as URLs dos microsserviços, por meio dos seus clientes HTTP', async () => {
   assert.deepEqual(await caminhosEm('bff-web', 'src/infraestrutura/clientes/**'), [
+    'src/infraestrutura/clientes/ClienteFuncaoDeEnriquecimento.ts',
     'src/infraestrutura/clientes/ClienteServicoDeFrota.ts',
     'src/infraestrutura/clientes/ClienteServicoDePedidos.ts',
     'src/infraestrutura/clientes/chamarServico.ts',
@@ -134,7 +143,7 @@ test('API Gateway: a tabela de rotas só encaminha para Backends for Frontends',
   assert.ok(destinos.every((d) => d.startsWith('bff-')), `destinos: ${destinos.join(', ')}`);
 });
 
-test('API Gateway é a única porta pública: só ele tem Function HTTP anônima; o resto exige chave', async () => {
+test('API Gateway é a única porta pública da API: fora ele e o Swagger, toda Function HTTP exige chave', async () => {
   const anonimas: string[] = [];
   for (const projeto of PROJETOS_DE_BACKEND) {
     await verificar(
@@ -154,7 +163,13 @@ test('API Gateway é a única porta pública: só ele tem Function HTTP anônima
         )
     );
   }
-  assert.deepEqual(anonimas, ['backend/gateway/src/features/roteamento/encaminhar-requisicao/encaminharRequisicaoFunction.ts']);
+  // Únicas exceções: o gateway e a documentação Swagger (pública e somente leitura).
+  const esperadas = [
+    'backend/gateway/src/features/documentacao/swagger/swaggerFunction.ts',
+    'backend/gateway/src/features/roteamento/encaminhar-requisicao/encaminharRequisicaoFunction.ts',
+    ...PROJETOS_DE_BACKEND.filter((p) => p !== 'gateway').map((p) => `backend/${p}/src/features/documentacao/swagger/swaggerFunction.ts`),
+  ];
+  assert.deepEqual([...anonimas].sort(), esperadas.sort());
 });
 
 test('Serverless: todo ponto de entrada é uma Azure Function (HTTP ou Queue Trigger), sem servidor próprio', async () => {

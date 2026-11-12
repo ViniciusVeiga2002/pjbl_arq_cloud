@@ -1,6 +1,7 @@
 import type { HttpRequest, InvocationContext } from '@azure/functions';
 import { criarClienteServicoDePedidos } from '../infraestrutura/clientes/ClienteServicoDePedidos';
 import { criarClienteServicoDeFrota } from '../infraestrutura/clientes/ClienteServicoDeFrota';
+import { criarClienteFuncaoDeEnriquecimento } from '../infraestrutura/clientes/ClienteFuncaoDeEnriquecimento';
 
 import PesquisarPedidosCasoDeUso from '../features/pedidos/pesquisar-pedidos/PesquisarPedidosCasoDeUso';
 import CadastrarPedidoCasoDeUso from '../features/pedidos/cadastrar-pedido/CadastrarPedidoCasoDeUso';
@@ -8,6 +9,7 @@ import AlterarPedidoCasoDeUso from '../features/pedidos/alterar-pedido/AlterarPe
 import ExcluirPedidoCasoDeUso from '../features/pedidos/excluir-pedido/ExcluirPedidoCasoDeUso';
 import ConcluirEntregaCasoDeUso from '../features/pedidos/concluir-entrega/ConcluirEntregaCasoDeUso';
 import ObterPainelFrotaCasoDeUso from '../features/painel/obter-painel-frota/ObterPainelFrotaCasoDeUso';
+import ObterDadosAgregadosCasoDeUso from '../features/agregacao/obter-dados-agregados/ObterDadosAgregadosCasoDeUso';
 
 // Composition Root do BFF: liga cada caso de uso aos clientes HTTP dos
 // microsserviços. O correlation-id recebido do API Gateway é repassado aos
@@ -37,3 +39,10 @@ export const criarConcluirEntregaCasoDeUso = (request: HttpRequest) =>
 
 export const criarObterPainelFrotaCasoDeUso = (request: HttpRequest) =>
     new ObterPainelFrotaCasoDeUso(criarClienteServicoDeFrota(correlationIdDe(request)));
+
+export const criarObterDadosAgregadosCasoDeUso = (request: HttpRequest) =>
+    new ObterDadosAgregadosCasoDeUso(
+      criarClienteServicoDePedidos(correlationIdDe(request)),
+      criarClienteServicoDeFrota(correlationIdDe(request)),
+      criarClienteFuncaoDeEnriquecimento(correlationIdDe(request))
+    );

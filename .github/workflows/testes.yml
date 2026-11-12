@@ -23,13 +23,13 @@ jobs:
 
       - name: Instalar dependências do backend
         run: |
-          for projeto in gateway bff-web servico-pedidos servico-frota; do
+          for projeto in gateway bff-web servico-pedidos servico-frota funcao-enriquecimento; do
             npm ci --prefix backend/$projeto
           done
 
       - name: Checagem de tipos e build do backend (TypeScript)
         run: |
-          for projeto in gateway bff-web servico-pedidos servico-frota; do
+          for projeto in gateway bff-web servico-pedidos servico-frota funcao-enriquecimento; do
             npm run typecheck --prefix backend/$projeto
             npm run build --prefix backend/$projeto
           done

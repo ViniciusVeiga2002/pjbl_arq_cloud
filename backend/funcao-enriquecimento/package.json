@@ -1,0 +1,22 @@
+{
+  "name": "funcao-enriquecimento",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Azure Function (HTTP Trigger) de enriquecimento: calcula o risco de atraso de cada pedido cruzando status, previsão de entrega e alertas de velocidade dos veículos. Sem banco de dados. Vertical Slice + Clean Architecture.",
+  "main": "dist/src/features/**/*Function.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prestart": "npm run build",
+    "start": "func start --port 7074",
+    "test": "tsx --test \"tests/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

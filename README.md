@@ -21,13 +21,29 @@ Theo Otto e Vinicius Veiga. Prompts de IA generativa usados: [Prompt.md](Prompt.
 
 ## Links
 
-- **Repositório:** https://github.com/ViniciusVeiga2002/pjbl_arq_cloud
-- **Frontend (Azure Static Web Apps):** https://kind-water-063145a0f.7.azurestaticapps.net
-- **API pública (API Gateway):** https://pjbl-arq-cloud-gateway.azurewebsites.net/api/web/
-- **Documentação de arquitetura (Arc42):** [docs/arc42/](docs/arc42/) —
-  roteiro de atualização desta etapa em
-  [docs/arc42/ATUALIZACAO_ARC42_ETAPA2.md](docs/arc42/ATUALIZACAO_ARC42_ETAPA2.md),
-  diagramas em [docs/arc42/diagramas/](docs/arc42/diagramas/)
+| Item | URL |
+| --- | --- |
+| Frontend (Azure Container Apps) | https://pjbl-frontend.greenground-94454a2d.eastus2.azurecontainerapps.io/ |
+| API Gateway — Swagger | https://pjbl-arq-cloud-gateway.azurewebsites.net/api/docs |
+| BFF — Swagger | https://pjbl-arq-cloud-bff-web.azurewebsites.net/api/docs |
+| Microsserviço 1 (Pedidos/MongoDB) — Swagger | https://pjbl-arq-cloud-pedidos.azurewebsites.net/api/docs |
+| Microsserviço 2 (Frota) — Swagger | https://pjbl-arq-cloud-frota.azurewebsites.net/api/docs |
+| Azure Function (enriquecimento) — Swagger | https://pjbl-arq-cloud-enriquecimento.azurewebsites.net/api/docs |
+| Endpoint obrigatório | `GET https://pjbl-arq-cloud-gateway.azurewebsites.net/api/web/aggregated-data` |
+| Documentação (Arc42, C4, Canvas) | [docs/arc42/](docs/arc42/) |
+| Limitação do Azure SQL (Students) | [docs/LIMITACAO_AZURE_SQL.md](docs/LIMITACAO_AZURE_SQL.md) |
+
+### Repositórios públicos e imagens Docker
+
+| Projeto | GitHub | Docker Hub |
+| --- | --- | --- |
+| Microfrontend | https://github.com/ViniciusVeiga2002/pjbl-frontend | https://hub.docker.com/r/viniciusveigadesantana/pjbl-frontend |
+| API Gateway | https://github.com/ViniciusVeiga2002/pjbl-gateway | https://hub.docker.com/r/viniciusveigadesantana/pjbl-gateway |
+| BFF | https://github.com/ViniciusVeiga2002/pjbl-bff | https://hub.docker.com/r/viniciusveigadesantana/pjbl-bff |
+| Microsserviço Pedidos (MongoDB) | https://github.com/ViniciusVeiga2002/pjbl-servico-pedidos | https://hub.docker.com/r/viniciusveigadesantana/pjbl-servico-pedidos |
+| Microsserviço Frota | https://github.com/ViniciusVeiga2002/pjbl-servico-frota | https://hub.docker.com/r/viniciusveigadesantana/pjbl-servico-frota |
+| Azure Function | https://github.com/ViniciusVeiga2002/pjbl-funcao-enriquecimento | https://hub.docker.com/r/viniciusveigadesantana/pjbl-funcao-enriquecimento |
+| Guarda-chuva (docs + testes de arquitetura) | https://github.com/ViniciusVeiga2002/pjbl_arq_cloud | — |
 
 ## Estrutura
 
@@ -38,12 +54,13 @@ Theo Otto e Vinicius Veiga. Prompts de IA generativa usados: [Prompt.md](Prompt.
 │   ├── mfe-pedidos/               # remoto: tela Pedidos por Entrega
 │   ├── mfe-frota/                 # remoto: tela Mapa da Frota
 │   └── scripts/montar-dist.js     # junta os 3 builds em frontend/dist
-├── backend/                       # 4 Function Apps independentes
+├── backend/                       # 5 Function Apps independentes
 │   ├── gateway/                   # API Gateway (porta 7070)
 │   ├── bff-web/                   # Backend for Frontend (porta 7072)
 │   ├── servico-pedidos/           # microsserviço + banco pjbl_pedidos (porta 7071)
-│   └── servico-frota/             # microsserviço + banco pjbl_frota (porta 7073)
-├── testes-arquitetura/            # 84 regras de arquitetura (ArchUnitTS)
+│   ├── servico-frota/             # microsserviço + banco pjbl_frota (porta 7073)
+│   └── funcao-enriquecimento/     # Azure Function HTTP Trigger (porta 7074)
+├── testes-arquitetura/            # 99 regras de arquitetura (ArchUnitTS)
 ├── docker-compose.yml             # MongoDB ×2 + Azurite para rodar localmente
 └── docs/arc42/                    # documentação de arquitetura e diagramas
 ```
@@ -113,8 +130,8 @@ Para desenvolver um microfrontend isolado: `npm run dev -w mfe-pedidos`
 
 ```bash
 npm test                    # tudo: unidade + arquitetura
-npm run test:unidade        # 76 testes de unidade dos 4 backends
-npm run test:arquitetura    # 84 regras de arquitetura (ArchUnitTS)
+npm run test:unidade        # 85 testes de unidade dos 5 backends
+npm run test:arquitetura    # 99 regras de arquitetura (ArchUnitTS)
 ```
 
 O código de backend e frontend é TypeScript (os backends compilam para `dist/`

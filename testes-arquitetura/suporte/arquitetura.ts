@@ -11,7 +11,7 @@ import type { CheckOptions, CustomFileCondition, FileInfo } from 'archunit';
 
 export const RAIZ = path.resolve(__dirname, '..', '..');
 
-export const PROJETOS_DE_BACKEND = ['gateway', 'bff-web', 'servico-pedidos', 'servico-frota'] as const;
+export const PROJETOS_DE_BACKEND = ['gateway', 'bff-web', 'servico-pedidos', 'servico-frota', 'funcao-enriquecimento'] as const;
 export const MICROSSERVICOS = ['servico-pedidos', 'servico-frota'] as const;
 export type ProjetoDeBackend = (typeof PROJETOS_DE_BACKEND)[number];
 

@@ -28,7 +28,7 @@ const arquivos = (projeto: (typeof PROJETOS_DE_BACKEND)[number]) => projectFiles
 //  - @azure/functions: o registro da Function (app.http/app.storageQueue) é
 //    do adaptador de entrada; nas demais camadas só como `import type`.
 //  - mongodb e @azure/storage-queue: só na infraestrutura.
-const SO_NA_INFRAESTRUTURA = ['mongodb', '@azure/storage-queue'];
+const SO_NA_INFRAESTRUTURA = ['mongodb', 'mssql', '@azure/storage-queue'];
 
 for (const projeto of projetosComCamada('dominio')) {
   test(`[${projeto}] o domínio não depende de nenhuma outra camada`, async () => {
@@ -84,7 +84,7 @@ for (const projeto of PROJETOS_DE_BACKEND) {
     }
   });
 
-  test(`[${projeto}] bibliotecas de infraestrutura (mongodb, storage-queue) só aparecem na infraestrutura`, async () => {
+  test(`[${projeto}] bibliotecas de infraestrutura (mongodb, mssql, storage-queue) só aparecem na infraestrutura`, async () => {
     for (const pacote of SO_NA_INFRAESTRUTURA) {
       for (const camada of ['dominio', 'aplicacao', 'features', 'composicao'] as const) {
         if (!projetosComCamada(camada).includes(projeto)) continue;
