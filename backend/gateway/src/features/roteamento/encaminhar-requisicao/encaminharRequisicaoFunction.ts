@@ -1,5 +1,6 @@
-import { app, HttpRequest } from '@azure/functions';
+import { app, HttpRequest, HttpResponseInit } from '@azure/functions';
 import { randomUUID } from 'node:crypto';
+import { especificacaoOpenApi, paginaSwaggerUi } from '../../../infraestrutura/documentacao/swagger';
 import { criarEncaminharRequisicaoCasoDeUso, obterPoliticaDeCors } from '../../../composicao/ContainerDeDependencias';
 
 // API Gateway (adaptador HTTP): rota "pega-tudo" /api/{*caminho}, anônima —
@@ -17,11 +18,18 @@ app.http('gateway', {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   authLevel: 'anonymous',
   route: '{*caminho}',
-  handler: async (request, context) => {
+  handler: async (request, context): Promise<HttpResponseInit> => {
     const origem = request.headers.get('origin');
     const cors: Record<string, string> = obterPoliticaDeCors().cabecalhosPara(origem);
     const recebido = request.headers.get('x-correlation-id');
     const correlationId = recebido && CORRELATION_ID_VALIDO.test(recebido) ? recebido : randomUUID();
+
+    // A rota pega-tudo vence a rota literal: a documentação Swagger é servida daqui.
+    const caminhoPedido = request.params.caminho || '';
+    if (request.method === 'GET' && caminhoPedido === 'openapi.json') return { status: 200, headers: { 'content-type': 'application/json' }, body: JSON.stringify(especificacaoOpenApi) };
+    if (request.method === 'GET' && caminhoPedido === 'docs') {
+      return { status: 200, headers: { 'content-type': 'text/html; charset=utf-8' }, body: paginaSwaggerUi };
+    }
 
     if (request.method === 'OPTIONS') {
       return { status: 204, headers: cors };
