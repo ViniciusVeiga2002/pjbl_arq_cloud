@@ -5,7 +5,7 @@ import { criarObterDadosAgregadosCasoDeUso } from '../../../composicao/Container
 
 // GET /api/aggregated-data — exposto pelo API Gateway como
 // GET /api/web/aggregated-data. Endpoint obrigatório do PJBL: devolve, num
-// único response, pedidos (Mongo), frota (Azure SQL) e o enriquecimento da
+// único response, pedidos (Mongo), frota (MongoDB) e o enriquecimento da
 // Azure Function.
 app.http('bffObterDadosAgregados', {
   methods: ['GET'],

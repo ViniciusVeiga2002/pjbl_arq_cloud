@@ -4,9 +4,9 @@
 export const especificacaoOpenApi = {
   "openapi": "3.0.3",
   "info": {
-    "title": "Serviço de Frota (Azure SQL)",
+    "title": "Serviço de Frota (MongoDB Atlas)",
     "version": "1.0.0",
-    "description": "Microsserviço 2 — veículos (telemetria OBD2/GPS) e projeção de entregas, banco Azure SQL pjbl_frota. Consome as filas pedidos-eventos e telemetria-veiculos."
+    "description": "Microsserviço 2 — veículos (telemetria OBD2/GPS) e projeção de entregas, banco MongoDB pjbl_frota (adaptador Azure SQL opcional). Consome as filas pedidos-eventos e telemetria-veiculos."
   },
   "servers": [
     {

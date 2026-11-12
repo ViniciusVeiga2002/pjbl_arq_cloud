@@ -254,7 +254,7 @@ export const especificacaoOpenApi = {
         "tags": [
           "Agregação"
         ],
-        "summary": "Dados agregados: pedidos (MongoDB) + frota (Azure SQL) + risco (Azure Function)",
+        "summary": "Dados agregados: pedidos (MongoDB) + frota (MongoDB) + risco (Azure Function)",
         "responses": {
           "200": {
             "description": "Um único JSON com as três fontes",

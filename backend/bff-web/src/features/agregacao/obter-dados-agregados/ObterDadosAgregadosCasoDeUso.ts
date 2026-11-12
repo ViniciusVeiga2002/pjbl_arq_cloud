@@ -5,7 +5,7 @@ import { exigirFuncaoDeEnriquecimento, PortaFuncaoDeEnriquecimento } from '../..
 // Caso de uso do BFF "Dados agregados" (GET /aggregated-data). Um único
 // response reúne o que vem de três origens:
 //   1. servico-pedidos (MongoDB Atlas)   → pedidos
-//   2. servico-frota   (Azure SQL)       → veículos e entregas
+//   2. servico-frota   (MongoDB)       → veículos e entregas
 //   3. funcao-enriquecimento (Azure Function) → risco de atraso por pedido
 // As duas primeiras chamadas são paralelas; a Function depende delas. Se a
 // Function falhar, a resposta sai mesmo assim (com "enriquecimento": null e
@@ -42,7 +42,7 @@ class ObterDadosAgregadosCasoDeUso {
 
     return {
       geradoEm: new Date().toISOString(),
-      fontes: { pedidos: 'servico-pedidos (MongoDB)', frota: 'servico-frota (Azure SQL)', enriquecimento: 'funcao-enriquecimento (Azure Function)' },
+      fontes: { pedidos: 'servico-pedidos (MongoDB)', frota: 'servico-frota (MongoDB)', enriquecimento: 'funcao-enriquecimento (Azure Function)' },
       pedidos,
       frota: { veiculos, entregas },
       enriquecimento,
