@@ -147,10 +147,10 @@ microfrontends. Rodam no GitHub Actions antes de qualquer deploy.
 
 - `.github/workflows/testes.yml` — testes de unidade, de arquitetura e build
   do frontend em todo push/PR.
-- `.github/workflows/backend-azure-functions.yml` — publica os 4 Function
+- `.github/workflows/backend-azure-functions.yml` — publica os 5 Function
   Apps (um job por serviço) depois dos testes.
-- `.github/workflows/azure-static-web-apps-kind-water-063145a0f.yml` —
-  publica shell + microfrontends no Static Web App depois dos testes.
+- O frontend é publicado como imagem Docker no Azure Container Apps
+  (`frontend/Dockerfile`).
 
 ## Histórico das atividades
 

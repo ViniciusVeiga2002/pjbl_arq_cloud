@@ -36,6 +36,9 @@ jobs:
           - projeto: servico-frota
             function_app: pjbl-arq-cloud-frota
             perfil: AZURE_FUNCTIONAPP_PUBLISH_PROFILE_FROTA
+          - projeto: funcao-enriquecimento
+            function_app: pjbl-arq-cloud-enriquecimento
+            perfil: AZURE_FUNCTIONAPP_PUBLISH_PROFILE_ENRIQUECIMENTO
     steps:
       - uses: actions/checkout@v4
 
